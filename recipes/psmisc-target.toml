@@ -1,0 +1,18 @@
+name = "psmisc-target"
+version = "23.7"
+source = "https://sourceforge.net/projects/psmisc/files/psmisc/psmisc-23.7.tar.xz/download"
+sha256 = "58c55d9c1402474065adae669511c191de374b0871eec781239ab400b907c327"
+archive_root = "psmisc-23.7"
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+
+build = [
+  "ac_cv_lib_tinfo_tgetent=yes LIBS=-lncursesw TERMCAP_LIB=-lncursesw PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --disable-nls",
+  "sed -i 's/-ltinfo/-lncursesw/g' Makefile",
+  "make LIBS=-lncursesw"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

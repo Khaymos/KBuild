@@ -1,0 +1,18 @@
+name = "ncurses-target"
+version = "6.6"
+source = "https://ftp.gnu.org/gnu/ncurses/ncurses-6.6.tar.gz"
+sha256 = "355b4cbbed880b0381a04c46617b7656e362585d52e9cf84a67e2009b749ff11"
+archive_root = "ncurses-6.6"
+
+build_type = "target"
+depends = ["glibc"]
+
+build = [
+  "BUILD_CC=gcc ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --mandir=/usr/share/man --with-shared --without-normal --without-debug --enable-widec --without-cxx --without-ada --with-build-cc=gcc --with-default-terminfo-dir=/usr/share/terminfo --with-terminfo-dirs=/etc/terminfo:/lib/terminfo:/usr/share/terminfo --enable-pc-files --with-pkg-config-libdir=/usr/lib/pkgconfig --disable-stripping",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

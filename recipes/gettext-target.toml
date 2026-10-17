@@ -1,0 +1,22 @@
+name = "gettext-target"
+version = "1.0"
+source = "https://ftp.gnu.org/gnu/gettext/gettext-1.0.tar.xz"
+sha256 = "71132a3fb71e68245b8f2ac4e9e97137d3e5c02f415636eb508ae607bc01add7"
+archive_root = "gettext-1.0"
+build_type = "target"
+depends = [
+  "glibc",
+  "libunistring-target",
+  "zlib-target",
+  "xz-target"
+]
+
+build = [
+  "CPPFLAGS=\"-I$SYSROOT/usr/include\" LDFLAGS=\"-L$SYSROOT/usr/lib\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-java --disable-csharp --disable-go --disable-modula2 --disable-openmp --disable-curses --with-libunistring-prefix=\"$SYSROOT/usr\"",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

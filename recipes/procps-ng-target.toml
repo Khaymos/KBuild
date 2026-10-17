@@ -1,0 +1,17 @@
+name = "procps-ng-target"
+version = "4.0.7"
+source = "https://downloads.sourceforge.net/project/procps-ng/Production/procps-ng-4.0.7.tar.xz"
+sha256 = "9d2021f47a4501c667862c9942a92d1953694b21d11bcd1702e83eb594e3d67d"
+archive_root = "procps-ng-4.0.7"
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --docdir=/usr/share/doc/procps-ng-4.0.7 --disable-static --disable-kill --enable-watch8bit --without-systemd --without-elogind",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

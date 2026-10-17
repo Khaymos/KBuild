@@ -1,0 +1,22 @@
+name = "shadow-target"
+version = "4.20.3"
+source = "https://github.com/shadow-maint/shadow/releases/download/4.20.3/shadow-4.20.3.tar.xz"
+sha256 = "623be9429f64fa2165bfc5957c6a642ec309c5cf23c0d53855c99f7591922297"
+archive_root = "shadow-4.20.3"
+build_type = "target"
+depends = [
+  "glibc",
+  "libxcrypt-target",
+  "linux-pam-target"
+]
+
+build = [
+  "sed -i 's/nscd_flush_cache(MAYBE_UNUSED int _1)/nscd_flush_cache(MAYBE_UNUSED const char *_1)/' lib/nscd.h",
+  "CPPFLAGS=\"-I$SYSROOT/usr/include\" LDFLAGS=\"--sysroot=$SYSROOT -L$SYSROOT/usr/lib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --sysconfdir=/etc --libdir=/usr/lib --disable-static --disable-logind --disable-subordinate-ids --enable-shadowgrp --with-libpam=yes --with-bcrypt --with-yescrypt --with-nscd=no --with-sssd=no --with-libbsd=no --with-audit=no --with-acl=no --with-selinux=no --with-tcb=no",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

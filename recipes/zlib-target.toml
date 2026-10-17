@@ -1,0 +1,19 @@
+name = "zlib-target"
+version = "1.3.2"
+source = "https://zlib.net/fossils/zlib-1.3.2.tar.gz"
+sha256 = "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
+archive_root = "zlib-1.3.2"
+
+# Build zlib for KhaymOS, not for the Artix host.
+build_type = "target"
+
+depends = ["glibc"]
+
+build = [
+  "./configure --prefix=/usr",
+  "make"
+]
+
+install = [
+  "make install"
+]

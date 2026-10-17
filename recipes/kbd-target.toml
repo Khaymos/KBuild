@@ -1,0 +1,19 @@
+name = "kbd-target"
+version = "2.10.0"
+source = "https://www.kernel.org/pub/linux/utils/kbd/kbd-2.10.0.tar.xz"
+sha256 = "6e5ca4f8d76ee9e3a8db700b667f13e12aac9933828a64e1aaad93d26be9b479"
+archive_root = "kbd-2.10.0"
+
+build_type = "target"
+depends = ["glibc", "linux-headers", "zlib-target"]
+
+build = [
+  "sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure",
+  "CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" AR=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar\" RANLIB=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ranlib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --localstatedir=/var --disable-vlock --disable-nls",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

@@ -1,0 +1,18 @@
+name = "diffutils-target"
+version = "3.12"
+source = "https://ftp.gnu.org/gnu/diffutils/diffutils-3.12.tar.xz"
+sha256 = "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd"
+archive_root = "diffutils-3.12"
+
+build_type = "target"
+depends = ["glibc"]
+
+build = [
+  "ac_cv_func_strcasecmp=yes gl_cv_func_strcasecmp_works=yes ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-nls",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

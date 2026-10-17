@@ -1,0 +1,18 @@
+name = "readline-target"
+version = "8.3"
+source = "https://ftp.gnu.org/gnu/readline/readline-8.3.tar.gz"
+sha256 = "fe5383204467828cd495ee8d1d3c037a7eba1389c22bc6a041f627976f9061cc"
+archive_root = "readline-8.3"
+
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-static --with-curses --enable-multibyte",
+  "make SHLIB_LIBS=\"-lncursesw\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

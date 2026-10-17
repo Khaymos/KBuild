@@ -1,0 +1,19 @@
+name = "xz-target"
+version = "5.8.4"
+source = "https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.xz"
+sha256 = "4ce24038fd4221e0d13bc1a2de7a4db56e90b92b3bf75321f6c14be73f65de4b"
+archive_root = "xz-5.8.4"
+
+build_type = "target"
+depends = ["glibc"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-nls --disable-doc --disable-static",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/liblzma.la\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

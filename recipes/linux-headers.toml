@@ -1,0 +1,16 @@
+name = "linux-headers"
+version = "7.2.10"
+source = "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.10.tar.xz"
+sha256 = "2feaa70453e91f541be6a5c9078d8168e081af45a3d9718054850538cff2ebf3"
+archive_root = "linux-7.2.10"
+
+# Target package: exported Linux userspace API headers.
+build_type = "target"
+
+depends = []
+
+build = [
+  "make headers_install ARCH=x86 INSTALL_HDR_PATH=\"$DESTDIR/usr\""
+]
+
+install = []

@@ -1,0 +1,101 @@
+name = "net-tools-target"
+version = "2.10"
+source = "https://downloads.sourceforge.net/project/net-tools/net-tools-2.10.tar.xz"
+sha256 = "b262435a5241e89bfa51c3cabd5133753952f7a7b7b93f32e08cb9d96f580d69"
+archive_root = "net-tools-2.10"
+
+build_type = "target"
+depends = ["glibc", "linux-headers"]
+
+build = [
+  "python3 -c 'print(\"\\n\" * 256, end=\"\")' > config.answers && make config < config.answers && rm -f config.answers",
+  """python3 - <<'PY'
+import re
+from pathlib import Path
+
+features = (
+    "HAVE_AFAX25",
+    "HAVE_AFNETROM",
+    "HAVE_AFROSE",
+    "HAVE_HWAX25",
+    "HAVE_HWNETROM",
+    "HAVE_HWROSE",
+)
+
+config = Path("config.h")
+text = config.read_text()
+
+for feature in features:
+    pattern = rf"(?m)^#define {feature} [01]$"
+    updated, count = re.subn(pattern, f"#define {feature} 0", text)
+    if count != 1:
+        raise SystemExit(
+            f"Expected one generated definition for {feature}; found {count}"
+        )
+    text = updated
+
+config.write_text(text)
+
+make_config = Path("config.make")
+text = make_config.read_text()
+
+for feature in features:
+    pattern = rf"(?m)^{feature}=1$"
+    updated, count = re.subn(pattern, f"{feature}=0", text)
+    if count != 1:
+        raise SystemExit(
+            f"Expected one make setting for {feature}; found {count}"
+        )
+    text = updated
+
+make_config.write_text(text)
+
+makefile = Path("lib/Makefile")
+lines = makefile.read_text().splitlines(keepends=True)
+
+remove = {
+    "HWOBJS": {"ax25.o", "rose.o"},
+    "AFOBJS": {"ax25.o", "netrom.o", "rose.o"},
+    "AFGROBJS": {"ax25_gr.o", "netrom_gr.o", "rose_gr.o"},
+    "AFSROBJS": {"netrom_sr.o"},
+}
+found = {name: set() for name in remove}
+output = []
+
+for line in lines:
+    match = re.match(r"^(\\s*)(HWOBJS|AFOBJS|AFGROBJS|AFSROBJS)(\\s*=\\s*)(.*)$", line)
+
+    if not match:
+        output.append(line)
+        continue
+
+    indent, variable, assignment, values = match.groups()
+    tokens = values.split()
+    kept = []
+
+    for token in tokens:
+        if token in remove[variable]:
+            found[variable].add(token)
+        else:
+            kept.append(token)
+
+    output.append(indent + variable + assignment + " ".join(kept) + "\\n")
+
+for variable, expected in remove.items():
+    missing = expected - found[variable]
+    if missing:
+        raise SystemExit(
+            f"Expected objects not found in {variable}: {sorted(missing)}"
+        )
+
+makefile.write_text("".join(output))
+
+print("Disabled legacy AX.25, NET/ROM, and ROSE features.")
+print("Removed their corresponding objects from lib/Makefile.")
+PY""",
+  "make CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\""
+]
+
+install = [
+  "make CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" DESTDIR=\"$DESTDIR\" BINDIR=/usr/bin SBINDIR=/usr/bin install"
+]

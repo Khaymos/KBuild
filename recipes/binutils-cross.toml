@@ -1,0 +1,22 @@
+
+name = "binutils-cross"
+version = "2.47"
+source = "https://ftp.gnu.org/gnu/binutils/binutils-2.47.tar.xz"
+sha256 = "154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff"
+archive_root = "binutils-2.47"
+
+# This builds host-executable tools configured to target KhaymOS.
+# It is not a KhaymOS runtime package.
+build_type = "host"
+
+depends = []
+
+build = [
+  "mkdir -p ../binutils-build",
+  "cd ../binutils-build && ../binutils-2.47/configure --prefix=\"$KBUILD_TOOLCHAIN\" --target=\"$KBUILD_TARGET\" --with-sysroot=\"$SYSROOT\" --disable-nls --disable-werror --disable-gdb --disable-sim",
+  "cd ../binutils-build && make"
+]
+
+install = [
+  "cd ../binutils-build && make install"
+]

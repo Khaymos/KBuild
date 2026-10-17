@@ -1,0 +1,61 @@
+name = "elogind-target"
+version = "257.16"
+source = "https://github.com/elogind/elogind/archive/v257.16/elogind-257.16.tar.gz"
+sha256 = "3c8146409bfb9daa77f272212c2b0bf0ae727c782ec87ece0d2d25e0e5bf5f4c"
+archive_root = "elogind-257.16"
+build_type = "target"
+depends = [
+  "glibc",
+  "libcap-target",
+  "eudev-target",
+  "util-linux-target",
+  "dbus-target",
+  "linux-pam-target"
+]
+
+build = [
+  """cat > khaymos-cross.ini <<EOF
+[binaries]
+c = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc'
+ar = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar'
+strip = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip'
+pkgconfig = '/usr/bin/pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[properties]
+sys_root = '$SYSROOT'
+pkg_config_libdir = ['$SYSROOT/usr/lib/pkgconfig', '$SYSROOT/usr/share/pkgconfig']
+needs_exe_wrapper = true
+EOF""",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=libexec --includedir=include --datadir=share --sysconfdir=/etc --localstatedir=/var --buildtype=release --wrap-mode=nofallback -Dmode=release -Dcgroup-controller=openrc -Ddev-kvm-mode=0660 -Ddbuspolicydir=/etc/dbus-1/system.d -Ddbussystemservicedir=/usr/share/dbus-1/system-services -Ddocdir=/usr/share/doc/elogind-257.16 -Dman=disabled -Dhtml=disabled -Dtranslations=true -Dpam=enabled -Dpamconfdir=no -Dpolkit=disabled -Dacl=disabled -Daudit=disabled -Dselinux=disabled -Ddefault-kill-user-processes=false -Dhalt-path=/usr/bin/halt -Dpoweroff-path=/usr/bin/poweroff -Dreboot-path=/usr/bin/reboot build",
+  "ninja -C build"
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\"",
+  "ln -sf libelogind.pc \"$DESTDIR/usr/lib/pkgconfig/libsystemd.pc\"",
+  "ln -sf libelogind.pc \"$DESTDIR/usr/lib/pkgconfig/libsystemd-logind.pc\"",
+  "ln -sfn elogind \"$DESTDIR/usr/include/systemd\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\"",
+  """mkdir -p "$DESTDIR/etc/init.d"
+cat > "$DESTDIR/etc/init.d/elogind" <<'ELOGIND_INIT'
+#!/usr/sbin/openrc-run
+
+name="elogind"
+command="/usr/libexec/elogind"
+command_args_background="--daemon"
+pidfile="/run/elogind.pid"
+
+depend() {
+    need dbus
+    after localmount
+}
+ELOGIND_INIT
+chmod 0755 "$DESTDIR/etc/init.d/elogind"""",
+
+]

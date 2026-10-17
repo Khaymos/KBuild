@@ -1,0 +1,18 @@
+name = "e2fsprogs-target"
+version = "1.47.4"
+source = "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.47.4/e2fsprogs-1.47.4.tar.xz"
+sha256 = "fd5bf388cbdbe006a3d3b318d983b2948382440acc85a87f1e7d108653e8db0b"
+archive_root = "e2fsprogs-1.47.4"
+
+build_type = "target"
+depends = ["glibc", "zlib-target"]
+
+build = [
+  "CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" AR=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar\" RANLIB=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ranlib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --localstatedir=/var --disable-nls --enable-elf-shlibs --disable-fsck",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

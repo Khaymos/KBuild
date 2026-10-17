@@ -1,0 +1,20 @@
+name = "glibc"
+version = "2.44"
+source = "https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz"
+sha256 = "37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667"
+archive_root = "glibc-2.44"
+
+# KhaymOS target C library.
+build_type = "target"
+
+depends = ["linux-headers"]
+
+build = [
+  "mkdir -p ../glibc-build",
+  "cd ../glibc-build && BUILD_CC=gcc CONFIG_SITE=/dev/null libc_cv_slibdir=/usr/lib ../glibc-2.44/configure --prefix=/usr --host=\"$KBUILD_TARGET\" --build=\"$(../glibc-2.44/scripts/config.guess)\" --with-headers=\"$SYSROOT/usr/include\" --disable-nscd --disable-werror --enable-kernel=5.10",
+  "cd ../glibc-build && make"
+]
+
+install = [
+  "cd ../glibc-build && make install DESTDIR=\"$DESTDIR\""
+]

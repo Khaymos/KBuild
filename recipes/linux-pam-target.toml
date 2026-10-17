@@ -1,0 +1,36 @@
+name = "linux-pam-target"
+version = "1.7.3"
+source = "https://github.com/linux-pam/linux-pam/releases/download/v1.7.3/Linux-PAM-1.7.3.tar.xz"
+sha256 = "2ce4765fd49df6693771ef2941f81e33d8ee14b94a81a5c7b369aa3b137b85a5"
+archive_root = "Linux-PAM-1.7.3"
+build_type = "target"
+depends = ["glibc", "libxcrypt-target"]
+
+build = [
+  """cat > khaymos-cross.ini <<EOF
+[binaries]
+c = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc'
+ar = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar'
+strip = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip'
+pkgconfig = '/usr/bin/pkg-config'
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[properties]
+sys_root = '$SYSROOT'
+pkg_config_libdir = ['$SYSROOT/usr/lib/pkgconfig', '$SYSROOT/usr/share/pkgconfig']
+needs_exe_wrapper = true
+EOF""",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --includedir=include --datadir=share --localedir=share/locale --sysconfdir=/etc --localstatedir=/var --buildtype=release --wrap-mode=nofallback -Ddocdir=/usr/share/doc/Linux-PAM-1.7.3 -Ddocs=disabled -Di18n=disabled -Daudit=disabled -Deconf=disabled -Dlogind=disabled -Delogind=disabled -Dselinux=disabled -Dnis=disabled -Dexamples=false -Dxtests=false -Dpam_userdb=disabled -Dpam_lastlog=disabled -Dpam_unix=enabled build",
+  "ninja -C build"
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\"",
+  "chmod 4755 \"$DESTDIR/usr/sbin/unix_chkpwd\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

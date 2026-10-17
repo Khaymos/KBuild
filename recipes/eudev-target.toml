@@ -1,0 +1,18 @@
+name = "eudev-target"
+version = "3.2.14"
+source = "https://github.com/eudev-project/eudev/releases/download/v3.2.14/eudev-3.2.14.tar.gz"
+sha256 = "8da4319102f24abbf7fff5ce9c416af848df163b29590e666d334cc1927f006f"
+archive_root = "eudev-3.2.14"
+build_type = "target"
+depends = ["glibc", "linux-headers"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --disable-blkid --disable-kmod --disable-selinux --disable-manpages --disable-mtd_probe --enable-hwdb",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "if [ -d \"$DESTDIR/etc/udev/hwdb.d\" ]; then mkdir -p \"$DESTDIR/usr/lib/udev\" && mv \"$DESTDIR/etc/udev/hwdb.d\" \"$DESTDIR/usr/lib/udev/hwdb.d\"; fi",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

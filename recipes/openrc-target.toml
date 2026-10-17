@@ -1,0 +1,56 @@
+name = "openrc-target"
+version = "0.64.1"
+source = "https://deb.debian.org/debian/pool/main/o/openrc/openrc_0.64.1.orig.tar.xz"
+sha256 = "458d61e3ce9a4c2d14a292156c95c202db754569c47225ec511da7b4977fcc6b"
+archive_root = "openrc-0.64.1"
+
+build_type = "target"
+depends = ["glibc", "libcap-target"]
+
+build = [
+"""
+cat > khaymos-cross.ini <<KHAYMOS_CROSS_EOF
+[binaries]
+c = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc'
+ar = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar'
+strip = '$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip'
+pkgconfig = 'pkg-config'
+
+[properties]
+sys_root = '$SYSROOT'
+pkg_config_libdir = ['$SYSROOT/usr/lib/pkgconfig', '$SYSROOT/usr/share/pkgconfig']
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+KHAYMOS_CROSS_EOF
+meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=lib --sysconfdir=/etc -Dbranding='\"KhaymOS\"' -Dnewnet=false -Dpam=false -Dselinux=disabled -Daudit=disabled -Dsysvinit=false -Dpkgconfig=true build
+""",
+  "ninja -C build"
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\"",
+  """cat > "$DESTDIR/etc/init.d/dbus" <<'DBUS_INIT'
+#!/usr/sbin/openrc-run
+
+name="D-Bus System Message Bus"
+command="/usr/bin/dbus-daemon"
+pidfile="/run/dbus/pid"
+command_args="${dbusd_args---system}"
+
+depend() {
+    need localmount
+    after bootmisc
+}
+
+start_pre() {
+    mkdir -p /run/dbus
+}
+DBUS_INIT
+chmod 0755 "$DESTDIR/etc/init.d/dbus"""",
+]
