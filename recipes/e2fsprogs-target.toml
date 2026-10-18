@@ -5,10 +5,10 @@ sha256 = "fd5bf388cbdbe006a3d3b318d983b2948382440acc85a87f1e7d108653e8db0b"
 archive_root = "e2fsprogs-1.47.4"
 
 build_type = "target"
-depends = ["glibc", "zlib-target"]
+depends = ["glibc", "zlib-target", "util-linux-target"]
 
 build = [
-  "CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" AR=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar\" RANLIB=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ranlib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --localstatedir=/var --disable-nls --enable-elf-shlibs --disable-fsck",
+  "CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" AR=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar\" RANLIB=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ranlib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --localstatedir=/var --disable-nls --enable-elf-shlibs --disable-fsck --disable-libblkid --disable-libuuid",
   "make"
 ]
 
