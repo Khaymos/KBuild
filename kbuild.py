@@ -911,8 +911,93 @@ def command_verify(args):
     verify(fetch(data), data["sha256"])
 
 
+def all_recipe_order():
+    """Return every recipe once, ordered after its declared dependencies."""
+    recipe_names = sorted(
+        path.stem for path in RECIPES.glob("*.toml") if path.is_file()
+    )
+    if not recipe_names:
+        raise KBuildError("No package recipes found.")
+
+    recipes = {}
+    state = {}
+    stack = []
+    ordered = []
+
+    def visit(name):
+        status = state.get(name, 0)
+        if status == 2:
+            return
+        if status == 1:
+            cycle_start = stack.index(name)
+            cycle = stack[cycle_start:] + [name]
+            raise KBuildError(
+                "Dependency cycle detected: " + " -> ".join(cycle)
+            )
+
+        data = recipes.get(name)
+        if data is None:
+            data = _read_recipe(name)
+            recipes[name] = data
+
+        state[name] = 1
+        stack.append(name)
+        for dependency in data.get("depends", []):
+            visit(dependency)
+        stack.pop()
+        state[name] = 2
+        ordered.append(name)
+
+    for name in recipe_names:
+        visit(name)
+
+    return ordered
+
+
 def command_build(args):
-    build(args.name, force=args.force)
+    if args.name != "all":
+        if args.dry_run:
+            raise KBuildError("--dry-run is only supported with 'build all'")
+        build(args.name, force=args.force)
+        return
+
+    order = all_recipe_order()
+
+    if args.dry_run:
+        print(f"Build order: {len(order)} recipes (dependencies first)")
+        for index, name in enumerate(order, start=1):
+            data = _read_recipe(name)
+            dependencies = ", ".join(data.get("depends", [])) or "none"
+            build_type = data.get("build_type", "host")
+            print(
+                f"{index:2}/{len(order)}  {name} {data['version']} "
+                f"[{build_type}; dependencies: {dependencies}]"
+            )
+
+        target_recipes = [
+            name for name in order
+            if _read_recipe(name).get("build_type", "host") == "target"
+        ]
+        compiler = TOOLCHAIN / "bin" / f"{TARGET}-gcc"
+        if target_recipes and (
+            not compiler.is_file() or not os.access(compiler, os.X_OK)
+        ):
+            print()
+            print("WARNING: the target cross-compiler is not ready:")
+            print(f"  {compiler}")
+            print(
+                "Target recipes require the cross-compiler. "
+                "KBuild does not automatically promote host-built toolchain "
+                "packages or deploy target packages into the sysroot."
+            )
+
+        print()
+        print("Dry run complete; no packages were built.")
+        return
+
+    for index, name in enumerate(order, start=1):
+        print(f"\n==> [{index}/{len(order)}] Building {name}")
+        build(name, force=args.force)
 
 
 def command_clean(args):
@@ -952,6 +1037,10 @@ def main():
     build_parser.add_argument(
         "--force", action="store_true",
         help="Rebuild this package even if its cache is valid",
+    )
+    build_parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Show the dependency-first plan for 'build all' without building",
     )
 
     clean_parser = subparsers.add_parser("clean", help="Remove build output")
