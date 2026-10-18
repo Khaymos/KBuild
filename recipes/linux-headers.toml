@@ -6,6 +6,8 @@ archive_root = "linux-7.2.10"
 
 # Target package: exported Linux userspace API headers.
 build_type = "target"
+# Exported kernel API headers can be installed with host tools; no target compiler is needed.
+requires_cross_compiler = false
 
 depends = []
 

@@ -7,7 +7,7 @@ archive_root = "gcc-16.1.0"
 # Package GCC target runtime shared libraries into the KhaymOS sysroot.
 build_type = "target"
 
-depends = ["gcc-cross-stage1", "glibc"]
+depends = ["gcc-cross", "glibc"]
 
 build = [
   "set -eu; src=\"$KBUILD_TOOLCHAIN/$KBUILD_TARGET/lib64\"; mkdir -p \"$DESTDIR/usr/lib\"; for name in libgcc_s.so libgcc_s.so.1 libstdc++.so libstdc++.so.6 libstdc++.so.6.0.35 libatomic.so libatomic.so.1 libatomic.so.1.2.0 libgomp.so libgomp.so.1 libgomp.so.1.0.0; do if [ ! -e \"$src/$name\" ] && [ ! -L \"$src/$name\" ]; then echo \"Missing GCC runtime file: $src/$name\" >&2; exit 1; fi; cp -a \"$src/$name\" \"$DESTDIR/usr/lib/\"; done"

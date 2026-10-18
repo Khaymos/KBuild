@@ -35,6 +35,23 @@ DESTDIR_ROOT = ROOT / "destdir"
 SYSROOT = ROOT / "sysroot"
 TOOLCHAIN = ROOT / "toolchain"
 
+# The toolchain must be built in stages: native binutils, Linux API headers,
+# a header-only stage-1 compiler, target libc, and finally the full cross-GCC.
+BOOTSTRAP_ORDER = (
+    "binutils-cross",
+    "linux-headers",
+    "gcc-cross-stage1",
+    "glibc",
+    "gcc-cross",
+)
+BOOTSTRAP_ACTIONS = {
+    "binutils-cross": "build and promote into toolchain/",
+    "linux-headers": "build with host tools and deploy into sysroot/",
+    "gcc-cross-stage1": "build and promote into toolchain/bootstrap/",
+    "glibc": "build with the bootstrap compiler and deploy into sysroot/",
+    "gcc-cross": "build and promote the final cross-compiler into toolchain/",
+}
+
 TARGET = os.environ.get("KBUILD_TARGET", "x86_64-khaymos-linux-gnu")
 GENERIC_CFLAGS = "-O2 -pipe -march=x86-64 -mtune=generic"
 USER_AGENT = f"KBuild/{VERSION}"
@@ -135,6 +152,14 @@ def _read_recipe(name):
     if build_type not in ("host", "target"):
         raise KBuildError(f"{name}: build_type must be 'host' or 'target'")
     data["build_type"] = build_type
+
+    for field in ("requires_cross_compiler", "allow_bootstrap_compiler"):
+        if field in data and not isinstance(data[field], bool):
+            raise KBuildError(f"{name}: {field} must be a boolean")
+    if data.get("allow_bootstrap_compiler", False) and build_type != "target":
+        raise KBuildError(
+            f"{name}: allow_bootstrap_compiler is only valid for target recipes"
+        )
     return data
 
 
@@ -375,6 +400,19 @@ def save_metadata(data, fingerprint, dependency_fingerprints):
     temporary.replace(paths["metadata"])
 
 
+def target_compiler_path(data):
+    """Find a usable target compiler, honoring explicit bootstrap opt-in."""
+    if data.get("allow_bootstrap_compiler", False):
+        bootstrap = TOOLCHAIN / "bootstrap" / "bin" / f"{TARGET}-gcc"
+        if bootstrap.is_file() and os.access(bootstrap, os.X_OK):
+            return bootstrap
+
+    compiler = TOOLCHAIN / "bin" / f"{TARGET}-gcc"
+    if compiler.is_file() and os.access(compiler, os.X_OK):
+        return compiler
+    return None
+
+
 def build_environment(data, stage):
     build_type = data.get("build_type", "host")
     environment = os.environ.copy()
@@ -396,37 +434,57 @@ def build_environment(data, stage):
 
     if build_type == "target":
         bin_dir = TOOLCHAIN / "bin"
-        compiler = bin_dir / f"{TARGET}-gcc"
-        cxx_compiler = bin_dir / f"{TARGET}-g++"
-        if not compiler.is_file() or not os.access(compiler, os.X_OK):
-            raise KBuildError(
-                f"{data['name']}: target build requires executable cross-compiler:\n"
-                f"  {compiler}\nBuild and promote the KhaymOS cross-GCC first."
-            )
-        if not cxx_compiler.is_file() or not os.access(cxx_compiler, os.X_OK):
-            # C-only packages may not need C++; don't force CC recipes to use it.
-            cxx_value = f"{TARGET}-g++"
+        compiler = target_compiler_path(data)
+        if compiler is None:
+            if data.get("requires_cross_compiler", True):
+                expected = bin_dir / f"{TARGET}-gcc"
+                raise KBuildError(
+                    f"{data['name']}: target build requires executable cross-compiler:\n"
+                    f"  {expected}\n"
+                    "Build and promote the bootstrap/final KhaymOS cross-GCC first."
+                )
+
+            # A recipe explicitly marked as not requiring the cross compiler
+            # (currently linux-headers) uses host tools only to export headers.
+            environment.update({
+                "CC": os.environ.get("CC", "cc"),
+                "CXX": os.environ.get("CXX", "c++"),
+                "AR": os.environ.get("AR", "ar"),
+                "AS": os.environ.get("AS", "as"),
+                "LD": os.environ.get("LD", "ld"),
+                "NM": os.environ.get("NM", "nm"),
+                "RANLIB": os.environ.get("RANLIB", "ranlib"),
+                "STRIP": os.environ.get("STRIP", "strip"),
+                "CFLAGS": GENERIC_CFLAGS,
+                "CXXFLAGS": GENERIC_CFLAGS,
+                "LDFLAGS": os.environ.get("LDFLAGS", ""),
+            })
         else:
-            cxx_value = str(cxx_compiler)
-        environment.update({
-            "CC": str(compiler),
-            "CXX": cxx_value,
-            "AR": str(bin_dir / f"{TARGET}-ar"),
-            "AS": str(bin_dir / f"{TARGET}-as"),
-            "LD": str(bin_dir / f"{TARGET}-ld"),
-            "NM": str(bin_dir / f"{TARGET}-nm"),
-            "RANLIB": str(bin_dir / f"{TARGET}-ranlib"),
-            "STRIP": str(bin_dir / f"{TARGET}-strip"),
-            "CFLAGS": f"{GENERIC_CFLAGS} --sysroot={SYSROOT}",
-            "CXXFLAGS": f"{GENERIC_CFLAGS} --sysroot={SYSROOT}",
-            "LDFLAGS": f"--sysroot={SYSROOT}",
-            "PKG_CONFIG_SYSROOT_DIR": str(SYSROOT),
-            "PKG_CONFIG_LIBDIR": os.pathsep.join((
-                str(SYSROOT / "usr/lib/pkgconfig"),
-                str(SYSROOT / "usr/share/pkgconfig"),
-                str(SYSROOT / "usr/lib64/pkgconfig"),
-            )),
-        })
+            cxx_compiler = compiler.parent / f"{TARGET}-g++"
+            if not cxx_compiler.is_file() or not os.access(cxx_compiler, os.X_OK):
+                # C-only packages may not need C++; don't force CC recipes to use it.
+                cxx_value = f"{TARGET}-g++"
+            else:
+                cxx_value = str(cxx_compiler)
+            environment.update({
+                "CC": str(compiler),
+                "CXX": cxx_value,
+                "AR": str(bin_dir / f"{TARGET}-ar"),
+                "AS": str(bin_dir / f"{TARGET}-as"),
+                "LD": str(bin_dir / f"{TARGET}-ld"),
+                "NM": str(bin_dir / f"{TARGET}-nm"),
+                "RANLIB": str(bin_dir / f"{TARGET}-ranlib"),
+                "STRIP": str(bin_dir / f"{TARGET}-strip"),
+                "CFLAGS": f"{GENERIC_CFLAGS} --sysroot={SYSROOT}",
+                "CXXFLAGS": f"{GENERIC_CFLAGS} --sysroot={SYSROOT}",
+                "LDFLAGS": f"--sysroot={SYSROOT}",
+                "PKG_CONFIG_SYSROOT_DIR": str(SYSROOT),
+                "PKG_CONFIG_LIBDIR": os.pathsep.join((
+                    str(SYSROOT / "usr/lib/pkgconfig"),
+                    str(SYSROOT / "usr/share/pkgconfig"),
+                    str(SYSROOT / "usr/lib64/pkgconfig"),
+                )),
+            })
     else:
         # Host recipes use the native compiler unless the recipe overrides it.
         environment.setdefault("CC", os.environ.get("CC", "cc"))
@@ -465,13 +523,19 @@ def build(name, stack=None, force=False, as_dependency=False):
             print(f"Using deployed dependency: {name} {data['version']}")
             return fingerprint
 
-    # Fail before downloading or compiling a target package if no cross-GCC exists.
-    if data.get("build_type", "host") == "target":
+    # Fail before downloading or compiling target packages without a usable
+    # compiler. Explicit host-tools-only recipes and the glibc bootstrap recipe
+    # are the only exceptions.
+    if (
+        data.get("build_type", "host") == "target"
+        and data.get("requires_cross_compiler", True)
+        and target_compiler_path(data) is None
+    ):
         compiler = TOOLCHAIN / "bin" / f"{TARGET}-gcc"
-        if not compiler.is_file() or not os.access(compiler, os.X_OK):
-            raise KBuildError(
-                f"{name}: target build requires {compiler}; cross-GCC is not ready yet"
-            )
+        raise KBuildError(
+            f"{name}: target build requires {compiler}; run 'build all' "
+            "to perform the toolchain bootstrap, or promote the compiler first"
+        )
 
     archive = fetch(data)
     verify(archive, data["sha256"])
@@ -833,12 +897,48 @@ def promote(name):
             )
         payload_files.append(relative_text)
 
+    new_payload_paths = set(payload_files)
+    stale_entries = old_entries - new_payload_paths
+    for relative_text in stale_entries:
+        other_owners = owners.get(relative_text, set()) - {owner_id}
+        if other_owners:
+            raise KBuildError(
+                f"Cannot replace stale toolchain entry {relative_text}; also owned by "
+                + ", ".join(sorted(other_owners))
+            )
+
     for relative in payload_entries:
         source = staged_prefix / relative
         destination = TOOLCHAIN / relative
         _copy_entry(source, destination, _entry_kind(source))
 
-    database["packages"][owner_id] = sorted(set(payload_files))
+    # A rebuilt toolchain package may no longer install every path from its
+    # previous version (for example, moving GCC into toolchain/bootstrap/).
+    # Remove only paths that this same package previously owned.
+    for relative_text in sorted(
+        stale_entries,
+        key=lambda value: (len(Path(value).parts), value),
+        reverse=True,
+    ):
+        destination = TOOLCHAIN / Path(_safe_relative(relative_text))
+        if destination.is_symlink() or (
+            destination.exists() and not destination.is_dir()
+        ):
+            destination.unlink()
+    for relative_text in sorted(
+        stale_entries,
+        key=lambda value: (len(Path(value).parts), value),
+        reverse=True,
+    ):
+        current = (TOOLCHAIN / Path(_safe_relative(relative_text))).parent
+        while current != TOOLCHAIN and current.is_relative_to(TOOLCHAIN):
+            try:
+                current.rmdir()
+            except OSError:
+                break
+            current = current.parent
+
+    database["packages"][owner_id] = sorted(new_payload_paths)
     _write_ownership(TOOLCHAIN_OWNERSHIP, database)
     print(f"Promoted: {owner_id}")
     print(f"Toolchain: {TOOLCHAIN}")
@@ -912,12 +1012,19 @@ def command_verify(args):
 
 
 def all_recipe_order():
-    """Return every recipe once, ordered after its declared dependencies."""
+    """Return every recipe once, with toolchain bootstrap recipes first."""
     recipe_names = sorted(
         path.stem for path in RECIPES.glob("*.toml") if path.is_file()
     )
     if not recipe_names:
         raise KBuildError("No package recipes found.")
+
+    missing_bootstrap = [name for name in BOOTSTRAP_ORDER if name not in recipe_names]
+    if missing_bootstrap:
+        raise KBuildError(
+            "Cannot bootstrap KhaymOS; missing required recipes: "
+            + ", ".join(missing_bootstrap)
+        )
 
     recipes = {}
     state = {}
@@ -948,7 +1055,11 @@ def all_recipe_order():
         state[name] = 2
         ordered.append(name)
 
-    for name in recipe_names:
+    # Seed the walk with the required bootstrap sequence. Remaining recipes are
+    # topologically ordered afterward so they cannot run ahead of the toolchain.
+    roots = list(BOOTSTRAP_ORDER)
+    roots.extend(name for name in recipe_names if name not in set(roots))
+    for name in roots:
         visit(name)
 
     return ordered
@@ -964,40 +1075,53 @@ def command_build(args):
     order = all_recipe_order()
 
     if args.dry_run:
-        print(f"Build order: {len(order)} recipes (dependencies first)")
+        print(
+            f"Build plan: {len(order)} recipes; bootstrap toolchain before "
+            "building the remaining target system"
+        )
         for index, name in enumerate(order, start=1):
             data = _read_recipe(name)
             dependencies = ", ".join(data.get("depends", [])) or "none"
             build_type = data.get("build_type", "host")
+            action = BOOTSTRAP_ACTIONS.get(name)
+            if action is None:
+                action = (
+                    "build + deploy to sysroot"
+                    if build_type == "target"
+                    else "build (host package)"
+                )
             print(
                 f"{index:2}/{len(order)}  {name} {data['version']} "
-                f"[{build_type}; dependencies: {dependencies}]"
-            )
-
-        target_recipes = [
-            name for name in order
-            if _read_recipe(name).get("build_type", "host") == "target"
-        ]
-        compiler = TOOLCHAIN / "bin" / f"{TARGET}-gcc"
-        if target_recipes and (
-            not compiler.is_file() or not os.access(compiler, os.X_OK)
-        ):
-            print()
-            print("WARNING: the target cross-compiler is not ready:")
-            print(f"  {compiler}")
-            print(
-                "Target recipes require the cross-compiler. "
-                "KBuild does not automatically promote host-built toolchain "
-                "packages or deploy target packages into the sysroot."
+                f"[{build_type}; {action}; dependencies: {dependencies}]"
             )
 
         print()
-        print("Dry run complete; no packages were built.")
+        print("Bootstrap compiler order:")
+        for index, name in enumerate(BOOTSTRAP_ORDER, start=1):
+            print(f"  {index}. {name}")
+        print()
+        print("Dry run complete; no packages were built or deployed.")
         return
 
-    for index, name in enumerate(order, start=1):
+    bootstrap_names = set(BOOTSTRAP_ORDER)
+    print("\n==> Bootstrapping KhaymOS cross-toolchain")
+    for index, name in enumerate(BOOTSTRAP_ORDER, start=1):
+        print(f"\n==> [bootstrap {index}/{len(BOOTSTRAP_ORDER)}] {name}")
+        build(name, force=args.force)
+        if name in ("binutils-cross", "gcc-cross-stage1", "gcc-cross"):
+            promote(name)
+        else:
+            deploy(name)
+
+    remaining = [name for name in order if name not in bootstrap_names]
+    for index, name in enumerate(remaining, start=len(BOOTSTRAP_ORDER) + 1):
+        data = load_recipe(name)
         print(f"\n==> [{index}/{len(order)}] Building {name}")
         build(name, force=args.force)
+        if data.get("build_type", "host") == "target":
+            deploy(name)
+
+    print(f"\nKhaymOS build-all completed: {len(order)} recipes processed.")
 
 
 def command_clean(args):
@@ -1032,7 +1156,9 @@ def main():
     verify_parser = subparsers.add_parser("verify", help="Download and verify package source")
     verify_parser.add_argument("name")
 
-    build_parser = subparsers.add_parser("build", help="Build a package")
+    build_parser = subparsers.add_parser(
+        "build", help="Build a package or bootstrap and build all recipes"
+    )
     build_parser.add_argument("name")
     build_parser.add_argument(
         "--force", action="store_true",
@@ -1040,7 +1166,7 @@ def main():
     )
     build_parser.add_argument(
         "--dry-run", action="store_true",
-        help="Show the dependency-first plan for 'build all' without building",
+        help="Preview the staged bootstrap and dependency-first build-all plan",
     )
 
     clean_parser = subparsers.add_parser("clean", help="Remove build output")

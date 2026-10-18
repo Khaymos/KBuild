@@ -6,6 +6,8 @@ archive_root = "glibc-2.44"
 
 # KhaymOS target C library.
 build_type = "target"
+# Glibc must be built with the header-only bootstrap compiler before final GCC exists.
+allow_bootstrap_compiler = true
 
 depends = ["linux-headers"]
 
