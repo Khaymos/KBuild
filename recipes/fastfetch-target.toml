@@ -1,0 +1,17 @@
+name = "fastfetch-target"
+version = "2.70.0"
+source = "https://github.com/fastfetch-cli/fastfetch/archive/refs/tags/2.70.0.tar.gz"
+sha256 = "8aa01bd3faff2be1d94f231d76489ce6d9f781f51f6e93eafe82359d6d8669af"
+build_type = "target"
+depends = ["zlib-target"]
+archive_root = "mytool-1.2.3"
+
+build = [
+  "cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release",
+  "cmake --build build -j$(nproc)",
+]
+
+install = [
+  "make DESTDIR=\"$DESTDIR\" install",
+]
+

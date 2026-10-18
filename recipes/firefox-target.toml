@@ -1,0 +1,21 @@
+name = "firefox-target"
+version = "158.0"
+source = "https://ftp.mozilla.org/pub/firefox/releases/158.0/source/firefox-158.0.source.tar.xz"
+sha256 = "fc77f7801d7580a600af683cc367e261eb1ec74647e84a91b4a1e3c1dd5aa2bb"
+build_type = "target"
+depends = [
+  "glibc"
+  "zlib-target"
+  "libffi-target"
+  "glib-target"
+  "dbus-target"
+]
+
+build = [
+  "printf '%s\\n' 'ac_add_options --enable-application=browser' 'ac_add_options --enable-release' 'ac_add_options --prefix=/usr' 'ac_add_options --disable-tests' > mozconfig",
+  "MOZCONFIG=$PWD/mozconfig ./mach build",
+]
+
+install = [
+  "MOZCONFIG=$PWD/mozconfig DESTDIR=\"$DESTDIR\" ./mach install",
+]
