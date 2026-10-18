@@ -494,6 +494,18 @@ def build_environment(data, stage):
         if not ENV_NAME_PATTERN.fullmatch(key):
             raise KBuildError(f"{data['name']}: invalid environment variable {key!r}")
         environment[key] = value
+
+    # Cross-GCC/binutils makefiles sometimes invoke target-prefixed tools by
+    # name (for example, x86_64-khaymos-linux-gnu-ar) instead of using AR.
+    # Keep both promoted toolchain prefixes discoverable for every build.
+    toolchain_path_entries = (
+        str((TOOLCHAIN / "bin").resolve()),
+        str((TOOLCHAIN / "bootstrap" / "bin").resolve()),
+        environment.get("PATH", ""),
+    )
+    environment["PATH"] = os.pathsep.join(
+        entry for entry in toolchain_path_entries if entry
+    )
     return environment
 
 
