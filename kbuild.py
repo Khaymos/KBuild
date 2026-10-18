@@ -36,7 +36,7 @@ SYSROOT = ROOT / "sysroot"
 TOOLCHAIN = ROOT / "toolchain"
 
 # The toolchain must be built in stages: native binutils, Linux API headers,
-# a header-only stage-1 compiler, target libc, and finally the full cross-GCC.
+# a libc-less stage-1 compiler, target libc, and finally the full cross-GCC.
 BOOTSTRAP_ORDER = (
     "binutils-cross",
     "linux-headers",
