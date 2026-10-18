@@ -7,7 +7,7 @@ build_type = "target"
 depends = ["glibc", "libcap-target", "ncurses-target", "zlib-target"]
 
 build = [
-  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --runstatedir=/run --disable-nls --disable-static --disable-chfn-chsh --disable-login --disable-nologin --disable-uuidgen --disable-su --disable-setpriv --disable-runuser --disable-pylibmount --disable-liblastlog2 --without-python --disable-use-tty-group --disable-makeinstall-tty-setgid --disable-makeinstall-chown --disable-makeinstall-setuid ADJTIME_PATH=/var/lib/hwclock/adjtime --docdir=/usr/share/doc/util-linux-2.42.4",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --runstatedir=/run --disable-nls --disable-static --disable-chfn-chsh --disable-login --disable-nologin --disable-su --disable-setpriv --disable-runuser --disable-pylibmount --disable-liblastlog2 --without-python --disable-use-tty-group --disable-makeinstall-tty-setgid --disable-makeinstall-chown --disable-makeinstall-setuid ADJTIME_PATH=/var/lib/hwclock/adjtime --docdir=/usr/share/doc/util-linux-2.42.4",
   "make"
 ]
 
