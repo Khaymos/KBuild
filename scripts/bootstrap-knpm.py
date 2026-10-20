@@ -11,7 +11,7 @@ TOP = Path(__file__).resolve().parents[1]
 ROOTFS = Path(sys.argv[1]) if len(sys.argv) > 1 else TOP / "rootfs"
 
 ROOTFS = ROOTFS.absolute()
-KNPM_HOST = TOP.parent / "knpm/target/release/knpm"
+KNPM_HOST = TOP.parent.parent.parent / "knpm/target/release/knpm"
 KNPM_STAGE = TOP / "destdir/knpm-target-0.1.0/usr/bin/knpm"
 PACKAGES = TOP / "packages"
 
@@ -38,6 +38,7 @@ BOOTSTRAP_PACKAGES = [
     ("pcre2-target", "10.49", "pcre2-target-10.49.khmpkg"),
     ("libunistring-target", "1.4.2", "libunistring-target-1.4.2.khmpkg"),
     ('dbus-target', '1.16.2', 'dbus-target-1.16.2.khmpkg'),
+    ('grub-target', '2.14', 'grub-target-2.14.khmpkg'),
     ('kmod-target', '34.2', 'kmod-target-34.2.khmpkg'),
     ('eudev-target', '3.2.14', 'eudev-target-3.2.14.khmpkg'),
     ('openrc-target', '0.64.1', 'openrc-target-0.64.1.khmpkg'),
@@ -140,7 +141,7 @@ def main():
             print(f"Already registered: {name} {version}", flush=True)
             continue
 
-        action = "install" if name in {"net-tools-target", "kbd-target", "e2fsprogs-target"} else "adopt"
+        action = "adopt"
         print(f"=== {action.capitalize()} {name} {version} ===", flush=True)
         result = run_knpm(action, archive, root=ROOTFS)
         if result.returncode != 0:

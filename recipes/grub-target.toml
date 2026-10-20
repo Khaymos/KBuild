@@ -1,0 +1,58 @@
+name = "grub-target"
+version = "2.14"
+source = "https://ftp.gnu.org/gnu/grub/grub-2.14.tar.xz"
+sha256 = "bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43"
+archive_root = "grub-2.14"
+build_type = "target"
+depends = ["glibc"]
+
+build = [
+'''for tool in make gcc bison flex gawk pkg-config python3; do
+    command -v "$tool" >/dev/null 2>&1 || {
+        echo "Missing host build tool: $tool" >&2
+        exit 1
+    }
+done
+for tool in gcc nm objcopy strip; do
+    path="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-$tool"
+    test -x "$path" || {
+        echo "Missing cross-tool: $path" >&2
+        exit 1
+    }
+done''',
+'''mkdir -p build-khaymos
+cd build-khaymos
+ax_cv_check_ldflags___Wl___image_base_0x400000=no \
+CPP="$CC -E" \
+TARGET_CC="$CC" \
+CFLAGS="$CFLAGS -Os" \
+TARGET_CFLAGS="$CFLAGS -Os" \
+TARGET_CPPFLAGS="-Os -fno-stack-protector" \
+TARGET_LDFLAGS="$LDFLAGS -Os" \
+TARGET_NM="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-nm" \
+TARGET_OBJCOPY="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-objcopy" \
+TARGET_STRIP="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip" \
+../configure \
+    --build="$(gcc -dumpmachine)" \
+    --host="$KBUILD_TARGET" \
+    --target=i386 \
+    --with-platform=pc \
+    --prefix=/usr \
+    --exec-prefix=/usr \
+    --bindir=/usr/bin \
+    --sbindir=/usr/sbin \
+    --libdir=/usr/lib \
+    --sysconfdir=/etc \
+    --disable-grub-mkfont \
+    --enable-efiemu=no \
+    --enable-device-mapper=no \
+    --enable-libzfs=no \
+    --disable-werror \
+    ac_cv_lib_lzma_lzma_code=no''',
+'''make -C build-khaymos'''
+]
+
+install = [
+    'make -C build-khaymos DESTDIR="$DESTDIR" install',
+    'rm -f "$DESTDIR/usr/share/info/dir"'
+]

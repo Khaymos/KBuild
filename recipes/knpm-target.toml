@@ -1,0 +1,14 @@
+name = "knpm-target"
+version = "0.1.0"
+source = "https://github.com/Khaymos/knpm/archive/ce9204dcc1f1630fa0c59b9c6a974de1a08b0523.tar.gz"
+sha256 = "84cb639de2e431709c996c5ccc7ca35ea0caee7adb63552b13c45f22009e543c"
+build_type = "target"
+depends = ["glibc", "gcc-runtime"]
+
+build = [
+  "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" cargo build --release --locked --offline --target x86_64-unknown-linux-gnu",
+]
+
+install = [
+  "install -Dm755 target/x86_64-unknown-linux-gnu/release/knpm \"$DESTDIR/usr/bin/knpm\"",
+]
