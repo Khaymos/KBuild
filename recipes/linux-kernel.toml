@@ -9,7 +9,7 @@ depends = []
 build = [
   "for tool in make gcc bc bison flex perl; do command -v \"$tool\" >/dev/null 2>&1 || { echo \"Missing host build tool: $tool\"; exit 1; }; done; CROSS_GCC=\"$KBUILD_TOOLCHAIN/bin/${KBUILD_TARGET}-gcc\"; test -x \"$CROSS_GCC\" || { echo \"Missing KhaymOS cross-compiler: $CROSS_GCC\"; exit 1; }; \"$CROSS_GCC\" --version | head -n 1",
   "env -u CC -u CFLAGS -u CPPFLAGS -u CXXFLAGS -u LDFLAGS -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_LIBDIR make ARCH=x86 x86_64_defconfig",
-  "./scripts/config --file .config --enable MODULES --enable BLK_DEV_INITRD --enable RD_GZIP --enable DEVTMPFS --enable DEVTMPFS_MOUNT --enable PROC_FS --enable SYSFS --enable TMPFS --enable BINFMT_ELF --enable BINFMT_SCRIPT --enable TTY --enable SERIAL_8250 --enable SERIAL_8250_CONSOLE --enable UNIX98_PTYS --enable DEVPTS_FS",
+  "./scripts/config --file .config --enable MODULES --enable BLK_DEV_INITRD --enable RD_GZIP --enable DEVTMPFS --enable DEVTMPFS_MOUNT --enable PROC_FS --enable SYSFS --enable TMPFS --enable BINFMT_ELF --enable BINFMT_SCRIPT --enable TTY --enable SERIAL_8250 --enable SERIAL_8250_CONSOLE --enable UNIX98_PTYS --enable DEVPTS_FS --enable BLK_DEV_NVME",
   "env -u CC -u CFLAGS -u CPPFLAGS -u CXXFLAGS -u LDFLAGS -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_LIBDIR make ARCH=x86 olddefconfig",
   "PATH=\"$KBUILD_TOOLCHAIN/bin:$PATH\" env -u CC -u CFLAGS -u CPPFLAGS -u CXXFLAGS -u LDFLAGS -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_LIBDIR make ARCH=x86 CROSS_COMPILE=\"${KBUILD_TARGET}-\" bzImage modules"
 ]
