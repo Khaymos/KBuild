@@ -28,7 +28,7 @@ cpu = 'x86_64'
 endian = 'little'
 
 KHAYMOS_CROSS_EOF
-meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=lib --sysconfdir=/etc -Dbranding='\"KhaymOS\"' -Dnewnet=false -Dpam=false -Dselinux=disabled -Daudit=disabled -Dsysvinit=false -Dpkgconfig=true build
+meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=lib --sysconfdir=/etc -Dbranding='\"KhaymOS\"' -Dnewnet=false -Dpam=false -Dselinux=disabled -Daudit=disabled -Dsysvinit=true -Dpkgconfig=true build
 """,
   "ninja -C build"
 ]
@@ -50,6 +50,8 @@ depend() {
 
 start_pre() {
     mkdir -p /run/dbus
+    chown messagebus:messagebus /run/dbus
+    chmod 0755 /run/dbus
 }
 DBUS_INIT
 chmod 0755 "$DESTDIR/etc/init.d/dbus"""",
