@@ -8,15 +8,15 @@ fi
 
 TOP="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
-ROOTFS="$TOP/rootfs"
-KERNEL="$ROOTFS/boot/vmlinuz-khaymos-7.2.10"
+ROOTFS="${ROOTFS:-$TOP/rootfs}"
+KERNEL="${KERNEL:-$ROOTFS/boot/vmlinuz-khaymos-7.2.10}"
 
-INITRD="/tmp/khaymos-rootfs.cpio.gz"
-INITRD_TMP="$TOP/build/khaymos-rootfs.cpio.gz.new"
+INITRD="${INITRD:-/tmp/khaymos-rootfs.cpio.gz}"
+INITRD_TMP="${INITRD_TMP:-$TOP/build/khaymos-rootfs.cpio.gz.new}"
 
-ISO_ROOT="$TOP/build/khaymos-iso"
-DIST="$TOP/dist"
-ISO="$DIST/khaymos-0.1-dev-x86_64.iso"
+ISO_ROOT="${ISO_ROOT:-$TOP/build/khaymos-iso}"
+DIST="${DIST:-$TOP/dist}"
+ISO="${ISO:-$DIST/khaymos-0.1-dev-x86_64.iso}"
 
 for tool in grub-mkrescue xorriso gzip cpio find python3; do
     command -v "$tool" >/dev/null 2>&1 || {

@@ -7,7 +7,7 @@ fi
 
 TOP="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 SYSROOT="$TOP/sysroot"
-ROOTFS="$TOP/rootfs"
+ROOTFS="${ROOTFS:-$TOP/rootfs}"
 
 if [[ ! -d "$SYSROOT/usr/bin" ]]; then
     echo "ERROR: KBuild sysroot is missing." >&2
@@ -66,6 +66,7 @@ mkdir -p \
     "$ROOTFS/home" \
     "$ROOTFS/root" \
     "$ROOTFS/run" \
+    "$ROOTFS/run/dbus" \
     "$ROOTFS/tmp" \
     "$ROOTFS/var/empty" \
     "$ROOTFS/var/lib/dbus" \
@@ -244,6 +245,29 @@ tty6
 ttyS0
 ttyS1
 SECURETTY
+
+echo
+echo "=== Configuring PAM for local authentication ==="
+
+mkdir -p "$ROOTFS/etc/pam.d"
+
+cat > "$ROOTFS/etc/pam.d/system-auth" <<'PAM'
+#%PAM-1.0
+
+# Authenticate against the local password database.
+auth     required    pam_unix.so
+
+# Require a valid local account.
+account  required    pam_unix.so
+
+# Use the standard local password-change module.
+password required    pam_unix.so
+
+# Maintain PAM session state.
+session  required    pam_unix.so
+PAM
+
+chmod 0644 "$ROOTFS/etc/pam.d/system-auth"
 
 cat > "$ROOTFS/etc/shells" <<'SHELLS'
 /bin/sh
