@@ -1,0 +1,48 @@
+diff --git a/src/logo/ascii/k.inc b/src/logo/ascii/k.inc
+--- a/src/logo/ascii/k.inc
++++ b/src/logo/ascii/k.inc
+@@ -2,6 +2,19 @@
+ #include "logo_builtin.h"
+ #include "common/color.h"
+ 
+ static const FFlogo K[] = {
++    #ifdef FASTFETCH_DATATEXT_LOGO_KHAYMOS
++    // KhaymOS
++    {
++        .names = { "khaymos" },
++        .lines = FASTFETCH_DATATEXT_LOGO_KHAYMOS,
++        .colors = {
++            FF_COLOR_FG_WHITE,
++        },
++        .colorKeys = FF_COLOR_FG_WHITE,
++        .colorTitle = FF_COLOR_FG_DEFAULT,
++    },
++    #endif
++
+     #ifdef FASTFETCH_DATATEXT_LOGO_KAISEN
+     // Kaisen
+diff --git a/src/logo/ascii/k/khaymos.txt b/src/logo/ascii/k/khaymos.txt
+new file mode 100644
+--- /dev/null
++++ b/src/logo/ascii/k/khaymos.txt
+@@ -0,0 +1,20 @@
++$1          --0--
++$1            ---
++$1              --
++$1  =++++         --
++$1-=====+++        --
++$1---======+        ----
++$1   --=======      ----
++$1   ---====-===== -----
++$1  ===----=========-- --
++$1=================---   --
++$1===== ---++*#------     --
++$1       ---###=---        --
++$1      ---=###             --
++$1      ---=###              --
++$1     ----+#*                ---
++$1    -----*#-                  --
++$1    --------                   --
++$1   ---------
++$1   ---- ----
++$1   ---- ----

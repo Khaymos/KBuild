@@ -113,12 +113,20 @@ def _read_recipe(name):
     if not re.fullmatch(r"[0-9a-fA-F]{64}", data["sha256"]):
         raise KBuildError(f"{name}: sha256 must contain 64 hexadecimal digits")
 
-    for field in ("build", "install", "depends"):
+    for field in ("build", "install", "depends", "patches"):
         value = data.get(field, [])
         if not isinstance(value, list) or not all(
             isinstance(item, str) and item.strip() for item in value
         ):
             raise KBuildError(f"{name}: {field} must be an array of non-empty strings")
+
+    patches = data.get("patches", [])
+    if len(patches) != len(set(patches)):
+        raise KBuildError(f"{name}: duplicate patch paths are not allowed")
+    for patch in patches:
+        patch_path = Path(patch)
+        if patch_path.is_absolute() or ".." in patch_path.parts:
+            raise KBuildError(f"{name}: patch paths must stay inside the KBuild repository: {patch!r}")
 
     environment = data.get("environment", {})
     if not isinstance(environment, dict) or not all(
@@ -194,6 +202,24 @@ def package_paths(data):
     }
 
 
+def _recipe_patch_files(data):
+    """Resolve declared patch files without permitting paths outside the repository."""
+    root = ROOT.resolve()
+    resolved_patches = []
+    for relative in data.get("patches", []):
+        path = (ROOT / relative).resolve()
+        if not path.is_relative_to(root):
+            raise KBuildError(
+                f"{data['name']}: patch path escapes the KBuild repository: {relative!r}"
+            )
+        if not path.is_file():
+            raise KBuildError(
+                f"{data['name']}: patch file not found: {relative} (expected {path})"
+            )
+        resolved_patches.append((relative, path))
+    return resolved_patches
+
+
 def package_id(data):
     return f"{data['name']}-{data['version']}"
 
@@ -204,6 +230,12 @@ def recipe_fingerprint(data, dependency_fingerprints):
     digest = hashlib.sha256()
     digest.update(b"KBuild-fingerprint-v4\0")
     digest.update(recipe_path.read_bytes())
+    # Patch contents are build inputs: changing a patch must invalidate the cache.
+    for relative, patch_path in _recipe_patch_files(data):
+        digest.update(b"\0patch\0")
+        digest.update(relative.encode())
+        digest.update(b"\0")
+        digest.update(hashlib.sha256(patch_path.read_bytes()).hexdigest().encode())
     digest.update(b"\0target\0")
     digest.update(TARGET.encode())
     digest.update(b"\0build-type\0")
@@ -320,6 +352,32 @@ def run_commands(commands, cwd, environment, log_path, phase):
                     f"{phase} command failed with exit code {result.returncode}: {command}\n"
                     f"See log: {log_path}"
                 )
+
+
+def apply_recipe_patches(data, source_dir, log_path):
+    """Apply recipe-declared patches before the package's build commands run."""
+    for relative, patch_path in _recipe_patch_files(data):
+        command = ["patch", "--batch", "--forward", "-p1", "-i", str(patch_path)]
+        print(f"[patch] {relative}")
+        with log_path.open("a", encoding="utf-8") as log:
+            log.write(f"\n$ patch --batch --forward -p1 -i {patch_path}\n")
+            log.flush()
+            try:
+                result = subprocess.run(
+                    command,
+                    cwd=source_dir,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    check=False,
+                )
+            except OSError as exc:
+                raise KBuildError(
+                    f"Could not execute patch command for {relative}: {exc}"
+                ) from exc
+        if result.returncode != 0:
+            raise KBuildError(
+                f"Patch failed for {data['name']}: {relative}\nSee log: {log_path}"
+            )
 
 
 def read_metadata(path):
@@ -576,6 +634,7 @@ def build(name, stack=None, force=False, as_dependency=False):
             entries = list(paths["work"].iterdir())
             source_dir = entries[0] if len(entries) == 1 and entries[0].is_dir() else paths["work"]
 
+        apply_recipe_patches(data, source_dir, paths["log"])
         environment = build_environment(data, paths["stage"])
         run_commands(data.get("build", []), source_dir, environment, paths["log"], "build")
         run_commands(data.get("install", []), source_dir, environment, paths["log"], "install")
