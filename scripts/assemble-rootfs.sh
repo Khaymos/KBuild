@@ -68,8 +68,10 @@ mkdir -p \
     "$ROOTFS/root" \
     "$ROOTFS/run" \
     "$ROOTFS/run/dbus" \
+    "$ROOTFS/run/dhcpcd" \
     "$ROOTFS/tmp" \
     "$ROOTFS/var/empty" \
+    "$ROOTFS/var/lib/dhcpcd" \
     "$ROOTFS/var/lib/dbus" \
     "$ROOTFS/var/lib/elogind" \
     "$ROOTFS/var/lib/polkit-1" \
@@ -134,6 +136,7 @@ root:x:0:0:root:/root:/bin/bash
 bin:x:1:1:bin:/dev/null:/usr/bin/false
 daemon:x:2:2:daemon:/sbin:/usr/bin/false
 messagebus:x:81:81:D-Bus system message bus:/run/dbus:/usr/bin/false
+dhcpcd:x:68:68:DHCP client privilege separation:/var/lib/dhcpcd:/usr/bin/false
 polkitd:x:102:102:PolicyKit daemon:/var/lib/polkit-1:/usr/bin/false
 nobody:x:65534:65534:nobody:/var/empty:/usr/bin/false
 PASSWD
@@ -162,6 +165,7 @@ utmp:x:43:
 audio:x:63:
 input:x:97:
 messagebus:x:81:
+dhcpcd:x:68:
 polkitd:x:102:
 users:x:1000:
 nogroup:x:65534:
@@ -172,6 +176,7 @@ root:!:20000:0:99999:7:::
 bin:!:20000:0:99999:7:::
 daemon:!:20000:0:99999:7:::
 messagebus:!:20000:0:99999:7:::
+dhcpcd:!:20000:0:99999:7:::
 polkitd:!:20000:0:99999:7:::
 nobody:!:20000:0:99999:7:::
 SHADOW
@@ -200,6 +205,7 @@ utmp:!::
 audio:!::
 input:!::
 messagebus:!::
+dhcpcd:!::
 polkitd:!::
 users:!::
 nogroup:!::
@@ -322,16 +328,61 @@ fi
 echo
 echo "=== Configuring OpenRC for the available packages ==="
 
-# These services require utilities that are not yet packaged.
-# Keep their init scripts available, but don't start them by default.
+# Keep unimplemented services disabled, but enable loopback and DHCP networking.
 for level in boot default; do
-    for service in hostname keymaps save-keymaps loopback netmount; do
+    for service in hostname keymaps save-keymaps netmount; do
         rm -f "$ROOTFS/etc/runlevels/$level/$service"
     done
 done
 
-# netmount has a dependency on a separate "net" service we haven't built.
+# netmount depends on a separate network-online service that is not packaged.
 rm -f "$ROOTFS/etc/init.d/netmount"
+
+if [[ ! -x "$ROOTFS/etc/init.d/loopback" ]]; then
+    echo "ERROR: OpenRC loopback service is missing." >&2
+    exit 1
+fi
+mkdir -p "$ROOTFS/etc/runlevels/boot"
+ln -sfn /etc/init.d/loopback "$ROOTFS/etc/runlevels/boot/loopback"
+
+cat > "$ROOTFS/etc/init.d/dhcpcd" <<'DHCPCD_INIT'
+#!/sbin/openrc-run
+
+description="DHCP client daemon"
+command="/usr/sbin/dhcpcd"
+command_args="${dhcpcd_args:-} -B"
+command_background="yes"
+pidfile="/run/dhcpcd.pid"
+
+depend() {
+    need localmount
+    after bootmisc
+}
+
+start_pre() {
+    mkdir -p /run/dhcpcd /var/lib/dhcpcd
+}
+DHCPCD_INIT
+chmod 0755 "$ROOTFS/etc/init.d/dhcpcd"
+
+cat > "$ROOTFS/etc/conf.d/dhcpcd" <<'DHCPCD_CONF'
+dhcpcd_args="-q"
+DHCPCD_CONF
+
+if [[ ! -s "$ROOTFS/etc/dhcpcd.conf" ]]; then
+    cat > "$ROOTFS/etc/dhcpcd.conf" <<'DHCPCD_CONFIG'
+hostname
+persistent
+option domain_name_servers, domain_name, domain_search, host_name
+option classless_static_routes
+option interface_mtu
+require dhcp_server_identifier
+slaac private
+DHCPCD_CONFIG
+fi
+
+mkdir -p "$ROOTFS/etc/runlevels/default"
+ln -sfn /etc/init.d/dhcpcd "$ROOTFS/etc/runlevels/default/dhcpcd"
 
 # Configure a normal serial login; no autologin or skipped authentication.
 ln -sfn agetty "$ROOTFS/etc/init.d/agetty.ttyS0"
@@ -480,6 +531,8 @@ chown root:42 "$ROOTFS/etc/shadow" "$ROOTFS/etc/gshadow"
 # Service-account homes and data directories.
 chown 81:81 "$ROOTFS/var/lib/dbus"
 chmod 0755 "$ROOTFS/var/lib/dbus"
+chown 68:68 "$ROOTFS/var/lib/dhcpcd"
+chmod 0750 "$ROOTFS/var/lib/dhcpcd"
 chown 102:102 "$ROOTFS/var/lib/polkit-1"
 chmod 0750 "$ROOTFS/var/lib/polkit-1"
 

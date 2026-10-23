@@ -1,0 +1,16 @@
+name = "ca-certificates-target"
+version = "2026.10.20"
+source = "https://curl.se/ca/cacert-2026-10-20.pem"
+sha256 = "796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe"
+source_type = "file"
+build_type = "target"
+depends = ["openssl-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/filter-ca-certificates.py\" cacert-2026-10-20.pem ca-certificates.crt"
+]
+
+install = [
+  "install -Dm644 ca-certificates.crt \"$DESTDIR/etc/ssl/certs/ca-certificates.crt\"",
+  "ln -sfn certs/ca-certificates.crt \"$DESTDIR/etc/ssl/cert.pem\""
+]

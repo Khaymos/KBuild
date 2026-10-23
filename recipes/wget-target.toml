@@ -1,0 +1,17 @@
+name = "wget-target"
+version = "1.25.0"
+source = "https://ftp.gnu.org/gnu/wget/wget-1.25.0.tar.gz"
+sha256 = "766e48423e79359ea31e41db9e5c289675947a7fcf2efdcedb726ac9d0da3784"
+archive_root = "wget-1.25.0"
+build_type = "target"
+depends = ["glibc", "openssl-target", "zlib-target", "ca-certificates-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --with-ssl=openssl --with-libssl-prefix=\"$SYSROOT/usr\" --disable-nls --disable-iri --without-libpsl",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]

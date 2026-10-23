@@ -27,5 +27,18 @@ jobs:
           bash -n scripts/assemble-rootfs.sh
           bash -n scripts/publish-repo.sh
 
-      - name: Run repository index tests
-        run: python -m unittest discover -s tests -p 'test_repo_index.py'
+      - name: Run repository and recipe tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Temporary source checksum discovery
+        run: |
+          curl --fail --silent --show-error --location \
+            --proto '=https' --max-time 120 \
+            --output /tmp/knpm-source.tar.gz \
+            https://github.com/Khaymos/knpm/archive/9a11cf189cb3a520a1dfb9b22117a25e549b66f0.tar.gz
+          sha256sum /tmp/knpm-source.tar.gz
+          curl --fail --silent --show-error --location \
+            --proto '=https' --max-time 60 \
+            --output /tmp/cacert-2026-10-20.pem \
+            https://curl.se/ca/cacert-2026-10-20.pem
+          sha256sum /tmp/cacert-2026-10-20.pem

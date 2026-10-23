@@ -1,0 +1,16 @@
+name = "dhcpcd-target"
+version = "10.2.4"
+source = "https://github.com/NetworkConfiguration/dhcpcd/releases/download/v10.2.4/dhcpcd-10.2.4.tar.xz"
+sha256 = "6721e606609226dbf4d864a78802a9e96beec0ee034a1bd84138b3e037bba7d9"
+archive_root = "dhcpcd-10.2.4"
+build_type = "target"
+depends = ["glibc", "linux-headers"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/sbin --libexecdir=/usr/lib/dhcpcd --dbdir=/var/lib/dhcpcd --rundir=/run/dhcpcd --disable-debug --enable-privsep --privsepuser=dhcpcd",
+  "make"
+]
+
+install = [
+  "make DESTDIR=\"$DESTDIR\" install"
+]

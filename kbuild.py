@@ -146,6 +146,10 @@ def _read_recipe(name):
         if dependency == name:
             raise KBuildError(f"{name}: package cannot depend on itself")
 
+    source_type = data.get("source_type", "archive")
+    if source_type not in ("archive", "file"):
+        raise KBuildError(f"{name}: source_type must be 'archive' or 'file'")
+
     archive_root = data.get("archive_root")
     if archive_root is not None and (
         not isinstance(archive_root, str)
@@ -155,6 +159,9 @@ def _read_recipe(name):
         or "\\" in archive_root
     ):
         raise KBuildError(f"{name}: invalid archive_root")
+    if source_type == "file" and archive_root is not None:
+        raise KBuildError(f"{name}: file sources must not specify archive_root")
+    data["source_type"] = source_type
 
     build_type = data.get("build_type", "host")
     if build_type not in ("host", "target"):
@@ -477,6 +484,7 @@ def build_environment(data, stage):
     environment.update({
         "KBUILD_TOOLCHAIN": str(TOOLCHAIN.resolve()),
         "KBUILD_VERSION": VERSION,
+        "KBUILD_ROOT": str(ROOT.resolve()),
         "KBUILD_PACKAGE": data["name"],
         "KBUILD_PACKAGE_VERSION": data["version"],
         "KBUILD_TARGET": TARGET,
@@ -622,17 +630,26 @@ def build(name, stack=None, force=False, as_dependency=False):
     )
 
     try:
-        safe_extract(archive, paths["work"])
-        archive_root = data.get("archive_root")
-        if archive_root:
-            source_dir = paths["work"] / archive_root
-            if not source_dir.is_dir():
-                raise KBuildError(
-                    f"{name}: expected archive root not found: {archive_root}"
-                )
+        if data.get("source_type", "archive") == "file":
+            source_dir = paths["work"]
+            source_file = source_dir / archive_path(data["source"])
+            shutil.copy2(archive, source_file)
         else:
-            entries = list(paths["work"].iterdir())
-            source_dir = entries[0] if len(entries) == 1 and entries[0].is_dir() else paths["work"]
+            safe_extract(archive, paths["work"])
+            archive_root = data.get("archive_root")
+            if archive_root:
+                source_dir = paths["work"] / archive_root
+                if not source_dir.is_dir():
+                    raise KBuildError(
+                        f"{name}: expected archive root not found: {archive_root}"
+                    )
+            else:
+                entries = list(paths["work"].iterdir())
+                source_dir = (
+                    entries[0]
+                    if len(entries) == 1 and entries[0].is_dir()
+                    else paths["work"]
+                )
 
         apply_recipe_patches(data, source_dir, paths["log"])
         environment = build_environment(data, paths["stage"])

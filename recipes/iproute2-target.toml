@@ -1,0 +1,15 @@
+name = "iproute2-target"
+version = "7.3.0"
+source = "https://www.kernel.org/pub/linux/utils/net/iproute2/iproute2-7.3.0.tar.xz"
+sha256 = "5c1789d290bba048a6135ed1ab81b0402dd0fb528d1f1421765c42b1fc3d6289"
+archive_root = "iproute2-7.3.0"
+build_type = "target"
+depends = ["glibc", "linux-headers", "libcap-target", "zlib-target"]
+
+build = [
+  "make CC=\"$CC\" AR=\"$AR\" HOSTCC=cc KERNEL_INCLUDE=\"$SYSROOT/usr/include\""
+]
+
+install = [
+  "make CC=\"$CC\" AR=\"$AR\" HOSTCC=cc KERNEL_INCLUDE=\"$SYSROOT/usr/include\" DESTDIR=\"$DESTDIR\" PREFIX=/usr SBINDIR=/usr/sbin LIBDIR=/usr/lib DATADIR=/usr/share HDRDIR=/usr/include/iproute2 CONF_USR_DIR=/usr/share/iproute2 CONF_ETC_DIR=/etc/iproute2 MANDIR=/usr/share/man install"
+]
