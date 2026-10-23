@@ -93,5 +93,17 @@ class RepositoryIndexTests(unittest.TestCase):
                 INDEXER.collect_records(packages)
 
 
+    def test_rejects_symlinked_package_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            packages = root / "packages"
+            packages.mkdir()
+            alias = root / "packages-link"
+            alias.symlink_to(packages, target_is_directory=True)
+
+            with self.assertRaisesRegex(ValueError, "must not be a symlink"):
+                INDEXER.write_index(alias, root / "index.tsv")
+
+
 if __name__ == "__main__":
     unittest.main()
