@@ -4,7 +4,7 @@ source = "https://curl.se/download/curl-8.23.0.tar.gz"
 sha256 = "e3de77cfa6367083c776a26647fc9f633b538c06c3baa73d931a252ac8f72b49"
 archive_root = "curl-8.23.0"
 build_type = "target"
-depends = ["glibc", "openssl-target", "zlib-target", "ca-certificates-target"]
+depends = ["glibc", "openssl-target", "zlib-target", "ca-certificates-target", "libpsl-target"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --with-openssl=\"$SYSROOT/usr\" --with-zlib=\"$SYSROOT/usr\" --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt --with-ca-path=/etc/ssl/certs --disable-static --disable-ftp --disable-file --disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smtp --disable-gopher --disable-mqtt --disable-smb --disable-manual --disable-docs",
