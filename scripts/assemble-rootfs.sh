@@ -58,6 +58,7 @@ mkdir -p \
     "$ROOTFS/usr/sbin" \
     "$ROOTFS/usr/lib" \
     "$ROOTFS/etc" \
+    "$ROOTFS/etc/knpm" \
     "$ROOTFS/etc/conf.d" \
     "$ROOTFS/etc/init.d" \
     "$ROOTFS/etc/runlevels/default" \
@@ -290,6 +291,16 @@ ISSUE
 cat > "$ROOTFS/etc/motd" <<'MOTD'
 Welcome to KhaymOS Linux.
 MOTD
+
+echo
+echo "=== Installing the default KNPM mirrorlist ==="
+
+if [[ ! -s "$TOP/config/official.mirrorlist" ]]; then
+    echo "ERROR: official mirrorlist is missing: $TOP/config/official.mirrorlist" >&2
+    exit 1
+fi
+
+install -m 0644 "$TOP/config/official.mirrorlist" "$ROOTFS/etc/knpm/mirrorlist"
 
 if [[ ! -e "$ROOTFS/etc/login.defs" ]]; then
     cat > "$ROOTFS/etc/login.defs" <<'LOGINDEFS'
