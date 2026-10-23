@@ -34,6 +34,9 @@ jobs:
         run: |
           python3 kbuild.py verify openssl-target
           python3 kbuild.py verify ca-certificates-target
+          python3 kbuild.py verify libunistring-target
+          python3 kbuild.py verify libidn2-target
+          python3 kbuild.py verify libpsl-target
           python3 kbuild.py verify curl-target
           python3 kbuild.py verify wget-target
           python3 kbuild.py verify dhcpcd-target
