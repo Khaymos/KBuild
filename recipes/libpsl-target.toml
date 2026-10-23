@@ -1,0 +1,17 @@
+name = "libpsl-target"
+version = "0.23.3"
+source = "https://github.com/rockdaboot/libpsl/releases/download/0.23.3/libpsl-0.23.3.tar.gz"
+sha256 = "93941f85a1e7bd593fa94f299233cb5dfc91cd144fd9a78a6ceb75001c5b03be"
+archive_root = "libpsl-0.23.3"
+build_type = "target"
+depends = ["glibc", "libidn2-target", "libunistring-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-meson-cross.ini",
+  "meson setup build --cross-file=khaymos-meson-cross.ini --prefix=/usr --libdir=lib --buildtype=release --default-library=shared -Druntime=libidn2 -Dbuiltin=true -Dtests=false -Ddocs=false",
+  "ninja -C build"
+]
+
+install = [
+  "DESTDIR=\"$DESTDIR\" meson install -C build --no-rebuild"
+]
