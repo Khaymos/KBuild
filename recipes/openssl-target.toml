@@ -7,7 +7,7 @@ build_type = "target"
 depends = ["glibc", "zlib-target"]
 
 build = [
-  "./Configure linux-x86_64 --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared zlib-dynamic no-tests --cross-compile-prefix=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-\"",
+  "./Configure linux-x86_64 --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared zlib-dynamic no-tests",
   "make"
 ]
 
