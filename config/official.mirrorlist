@@ -1,0 +1,3 @@
+# KhaymOS official mirrorlist
+[mirror]
+https://khaymos.duckdns.org/repo/$arch/$khaymos
