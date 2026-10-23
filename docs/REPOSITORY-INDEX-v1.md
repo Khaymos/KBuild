@@ -51,3 +51,17 @@ Upload `index.tsv` to the repository base directory after the referenced package
 ## Integrity and trust
 
 The index SHA-256 lets KNPM reject a downloaded archive that does not match the indexed bytes. The package's own `CONTROL/manifest` is still verified by KNPM before installation. SHA-256 does not authenticate an index by itself; public mirrors should use HTTPS. A signed index can be added in a later version.
+
+## Publish to the Toshiba mirror
+
+The repository-publishing helper uses the SSH alias `khaymos-repo` by default. Override it with `KHAYMOS_REPO_HOST` if needed.
+
+```sh
+scripts/publish-repo.sh
+# Or specify the directory containing the complete package set:
+scripts/publish-repo.sh /path/to/khmpkg-archives
+```
+
+It validates the local package archives and prepares the new index before connecting to the server. It uploads package archives first, then `mirrorlists/official.list`, and publishes `index.tsv` last. Uploaded package/index/mirrorlist files are changed to mode `0644` so Nginx can serve them. It deliberately does not delete remote files.
+
+**Pass the complete package collection** when publishing: the new index describes exactly the archives in the selected local directory, while older unreferenced files on the server are left untouched.
