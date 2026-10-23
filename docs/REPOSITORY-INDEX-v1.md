@@ -57,9 +57,9 @@ The index SHA-256 lets KNPM reject a downloaded archive that does not match the 
 The repository-publishing helper uses the SSH alias `khaymos-repo` by default. Override it with `KHAYMOS_REPO_HOST` if needed.
 
 ```sh
-scripts/publish-repo.sh
+bash scripts/publish-repo.sh
 # Or specify the directory containing the complete package set:
-scripts/publish-repo.sh /path/to/khmpkg-archives
+bash scripts/publish-repo.sh /path/to/khmpkg-archives
 ```
 
 It validates the local package archives and prepares the new index before connecting to the server. It uploads package archives first, then `mirrorlists/official.list`, and publishes `index.tsv` last. Uploaded package/index/mirrorlist files are changed to mode `0644` so Nginx can serve them. It deliberately does not delete remote files.
