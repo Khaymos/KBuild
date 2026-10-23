@@ -21,7 +21,7 @@ EXCLUDED_SPKI_SHA256 = {
 }
 
 CERTIFICATE_RE = re.compile(
-    r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----",
+    rb"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----",
     re.DOTALL,
 )
 
@@ -58,7 +58,10 @@ def main() -> int:
 
     source = Path(sys.argv[1])
     destination = Path(sys.argv[2])
-    contents = source.read_text(encoding="ascii")
+    # The upstream bundle includes non-ASCII text in comments outside PEM
+    # blocks. Match the ASCII PEM blocks as bytes so those comments cannot
+    # make reading the entire file fail due to a text-decoding error.
+    contents = source.read_bytes()
     certificates = CERTIFICATE_RE.findall(contents)
     if not certificates:
         raise RuntimeError(f"no PEM certificates found in {source}")
@@ -67,8 +70,10 @@ def main() -> int:
     excluded = 0
     seen_certificates: set[str] = set()
 
-    for certificate in certificates:
-        normalized = certificate.strip() + "\n"
+    for certificate_bytes in certificates:
+        # PEM certificate payloads are ASCII even when surrounding comments
+        # in the bundle are not.
+        normalized = certificate_bytes.decode("ascii").strip() + "\n"
         fingerprint = hashlib.sha256(normalized.encode("ascii")).hexdigest()
         if fingerprint in seen_certificates:
             continue
