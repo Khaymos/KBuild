@@ -184,6 +184,11 @@ def render_index(records: list[dict[str, str]]) -> bytes:
 
 
 def write_index(packages_dir: Path, output: Path) -> int:
+    if packages_dir.is_symlink():
+        raise ValueError(f"packages directory must not be a symlink: {packages_dir}")
+    if not packages_dir.is_dir():
+        raise ValueError(f"packages directory is missing or unsafe: {packages_dir}")
+
     packages_dir = packages_dir.resolve()
     output = output.absolute()
 
