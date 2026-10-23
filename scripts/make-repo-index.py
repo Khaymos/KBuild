@@ -11,7 +11,6 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
-from typing import Any
 
 INDEX_MAGIC = "# KHAYMOS-REPO-INDEX-1"
 INDEX_FIELDS = (
@@ -30,10 +29,6 @@ NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+_.-]*$")
 VERSION_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+_.:~+-]*$")
 FILENAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+_.:~+-]*\.khmpkg$")
 
-
-def fail(message: str) -> "NoReturn":
-    print(f"make-repo-index: error: {message}", file=sys.stderr)
-    raise SystemExit(1)
 
 
 def digest_file(path: Path) -> str:
