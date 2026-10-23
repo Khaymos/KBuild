@@ -27,6 +27,13 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertEqual(recipe["version"], "2026.10.20")
         self.assertNotIn("archive_root", recipe)
 
+    def test_curl_keeps_public_suffix_protection_enabled(self) -> None:
+        curl = kbuild.load_recipe("curl-target")
+        self.assertIn("libpsl-target", curl["depends"])
+        psl = kbuild.load_recipe("libpsl-target")
+        self.assertEqual(psl["version"], "0.23.3")
+        self.assertIn("libidn2-target", psl["depends"])
+
     def test_remote_client_has_runtime_network_dependencies(self) -> None:
         recipe = kbuild.load_recipe("knpm-target")
         self.assertIn("curl-target", recipe["depends"])
