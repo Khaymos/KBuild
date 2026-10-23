@@ -30,3 +30,13 @@ jobs:
       - name: Run repository and recipe tests
         run: python -m unittest discover -s tests -v
 
+      - name: Verify pinned network-related package sources
+        run: |
+          python3 kbuild.py verify openssl-target
+          python3 kbuild.py verify ca-certificates-target
+          python3 kbuild.py verify curl-target
+          python3 kbuild.py verify wget-target
+          python3 kbuild.py verify dhcpcd-target
+          python3 kbuild.py verify iproute2-target
+          python3 kbuild.py verify knpm-target
+
