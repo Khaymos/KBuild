@@ -22,8 +22,10 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Check publishing script syntax
-        run: bash -n scripts/publish-repo.sh
+      - name: Check shell script syntax
+        run: |
+          bash -n scripts/assemble-rootfs.sh
+          bash -n scripts/publish-repo.sh
 
       - name: Run repository index tests
         run: python -m unittest discover -s tests -p 'test_repo_index.py'
