@@ -1,0 +1,17 @@
+name = "libidn2-target"
+version = "2.3.8"
+source = "https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz"
+sha256 = "f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a"
+archive_root = "libidn2-2.3.8"
+build_type = "target"
+depends = ["glibc", "libunistring-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-nls",
+  "make"
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]
