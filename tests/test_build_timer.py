@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import io
+import sys
 import unittest
 from contextlib import redirect_stdout
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-import kbuild
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import kbuild  # noqa: E402
 
 
 class BuildTimerTests(unittest.TestCase):
