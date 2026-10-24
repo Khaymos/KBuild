@@ -17,6 +17,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import time
 import tomllib
 import urllib.error
 import urllib.parse
@@ -1153,6 +1154,43 @@ def all_recipe_order():
     return ordered
 
 
+
+def _format_duration(elapsed_seconds):
+    """Format elapsed build time as compact days, hours, minutes and seconds."""
+    total_seconds = max(0, int(elapsed_seconds))
+    days, remainder = divmod(total_seconds, 24 * 60 * 60)
+    hours, remainder = divmod(remainder, 60 * 60)
+    minutes, seconds = divmod(remainder, 60)
+
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if hours or days:
+        parts.append(f"{hours}h")
+    if minutes or hours or days:
+        parts.append(f"{minutes}m")
+    parts.append(f"{seconds}s")
+    return " ".join(parts)
+
+
+def _ask_build_timer():
+    """Ask whether to time a full build; never prompt in non-interactive runs."""
+    if not sys.stdin.isatty():
+        return False
+
+    while True:
+        try:
+            answer = input("Do you want to use the timer? [Y/n] ").strip().lower()
+        except EOFError:
+            return False
+
+        if answer in ("", "y", "yes"):
+            return True
+        if answer in ("n", "no"):
+            return False
+        print("Please answer 'y' or 'n'.")
+
+
 def command_build(args):
     if args.name != "all":
         if args.dry_run:
@@ -1191,6 +1229,8 @@ def command_build(args):
         print("Dry run complete; no packages were built or deployed.")
         return
 
+    timer_started_at = time.monotonic() if _ask_build_timer() else None
+
     bootstrap_names = set(BOOTSTRAP_ORDER)
     print("\n==> Bootstrapping KhaymOS cross-toolchain")
     for index, name in enumerate(BOOTSTRAP_ORDER, start=1):
@@ -1210,6 +1250,9 @@ def command_build(args):
             deploy(name)
 
     print(f"\nKhaymOS build-all completed: {len(order)} recipes processed.")
+    if timer_started_at is not None:
+        elapsed = time.monotonic() - timer_started_at
+        print(f"Total KhaymOS build time: {_format_duration(elapsed)}")
 
 
 def command_clean(args):
