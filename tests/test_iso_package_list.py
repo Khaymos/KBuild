@@ -78,5 +78,21 @@ class IsoPackageListTests(unittest.TestCase):
         )
 
 
+    def test_iso_branding_uses_the_public_0_1_version(self) -> None:
+        builder_script = (ROOT / "scripts" / "build-iso.sh").read_text(
+            encoding="utf-8"
+        )
+        rootfs_script = (ROOT / "scripts" / "assemble-rootfs.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("khaymos-0.1-x86_64.iso", builder_script)
+        self.assertIn('KhaymOS GNU/Linux 0.1 (Live)', builder_script)
+        self.assertIn('PRETTY_NAME="KhaymOS Linux 0.1"', rootfs_script)
+        self.assertIn('VERSION="0.1"', rootfs_script)
+        self.assertNotIn("0.1-dev", builder_script)
+        self.assertNotIn("0.1-dev", rootfs_script)
+
+
 if __name__ == "__main__":
     unittest.main()
