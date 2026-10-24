@@ -335,8 +335,9 @@ for level in boot default; do
     done
 done
 
-# netmount depends on a separate network-online service that is not packaged.
-rm -f "$ROOTFS/etc/init.d/netmount"
+# Keep every package-owned service script intact for KNPM adoption.
+# netmount depends on a separate network-online service that is not packaged,
+# so the runlevel links above disable it without deleting its package payload.
 
 if [[ ! -x "$ROOTFS/etc/init.d/loopback" ]]; then
     echo "ERROR: OpenRC loopback service is missing." >&2
