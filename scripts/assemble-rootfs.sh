@@ -237,7 +237,7 @@ rpc: files
 NSSWITCH
 
 cat > "$ROOTFS/etc/fstab" <<'FSTAB'
-# KhaymOS development root: pseudo-filesystems are mounted by /init.
+# KhaymOS live root: pseudo-filesystems are mounted by /init.
 FSTAB
 
 cat > "$ROOTFS/etc/securetty" <<'SECURETTY'
@@ -284,18 +284,18 @@ SHELLS
 cat > "$ROOTFS/etc/os-release" <<'OSRELEASE'
 NAME="KhaymOS"
 ID=khaymos
-PRETTY_NAME="KhaymOS Linux 0.1-dev"
-VERSION="0.1-dev"
+PRETTY_NAME="KhaymOS Linux 0.1"
+VERSION="0.1"
 VERSION_ID="0.1"
 OSRELEASE
 
 cat > "$ROOTFS/etc/issue" <<'ISSUE'
-KhaymOS Linux 0.1-dev \n \l
+KhaymOS Linux 0.1 \n \l
 
 ISSUE
 
 cat > "$ROOTFS/etc/motd" <<'MOTD'
-Welcome to KhaymOS Linux.
+Welcome to KhaymOS Linux 0.1.
 MOTD
 
 echo
@@ -482,7 +482,7 @@ printf 'khaymos\n' > /proc/sys/kernel/hostname ||
     echo "[WARN] Could not set hostname"
 
 echo
-echo "KhaymOS Linux 0.1-dev: starting OpenRC..."
+echo "KhaymOS Linux 0.1 | Starting OpenRC..."
 exec /sbin/init
 INIT
 chmod 0755 "$ROOTFS/init"
