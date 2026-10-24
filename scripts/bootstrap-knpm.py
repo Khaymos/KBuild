@@ -11,15 +11,27 @@ TOP = Path(__file__).resolve().parents[1]
 ROOTFS = Path(sys.argv[1]) if len(sys.argv) > 1 else TOP / "rootfs"
 
 ROOTFS = ROOTFS.absolute()
-KNPM_HOST = TOP.parent.parent.parent / "knpm/target/release/knpm"
+PROJECT_ROOT = TOP.parent.parent.parent
+KNPM_CANDIDATES = (
+    PROJECT_ROOT / "knpm/gh/knpm/target/release/knpm",
+    PROJECT_ROOT / "knpm/target/release/knpm",
+)
+KNPM_HOST = next((candidate for candidate in KNPM_CANDIDATES if candidate.is_file()), KNPM_CANDIDATES[0])
 KNPM_STAGE = TOP / "destdir/knpm-target-0.1.0/usr/bin/knpm"
 PACKAGES = TOP / "packages"
 
 BOOTSTRAP_PACKAGES = [
     ("glibc", "2.44", "glibc-2.44.khmpkg"),
+    ("zlib-target", "1.3.2", "zlib-target-1.3.2.khmpkg"),
     ("gcc-runtime", "16.1.0", "gcc-runtime-16.1.0.khmpkg"),
     ("ncurses-target", "6.6", "ncurses-target-6.6.khmpkg"),
     ("readline-target", "8.3", "readline-target-8.3.khmpkg"),
+    ("openssl-target", "3.5.9", "openssl-target-3.5.9.khmpkg"),
+    ("ca-certificates-target", "2026.10.20", "ca-certificates-target-2026.10.20.khmpkg"),
+    ("libunistring-target", "1.4.2", "libunistring-target-1.4.2.khmpkg"),
+    ("libidn2-target", "2.3.8", "libidn2-target-2.3.8.khmpkg"),
+    ("libpsl-target", "0.23.3", "libpsl-target-0.23.3.khmpkg"),
+    ("curl-target", "8.23.0", "curl-target-8.23.0.khmpkg"),
     ("knpm-target", "0.1.0", "knpm-target-0.1.0.khmpkg"),
     ("bash-target", "5.3", "bash-target-5.3.khmpkg"),
     ("coreutils-target", "9.12", "coreutils-target-9.12.khmpkg"),
@@ -30,22 +42,20 @@ BOOTSTRAP_PACKAGES = [
     ("sed-target", "4.10", "sed-target-4.10.khmpkg"),
     ("tar-target", "1.35", "tar-target-1.35.khmpkg"),
     ("make-target", "4.4.1", "make-target-4.4.1.khmpkg"),
-    ("zlib-target", "1.3.2", "zlib-target-1.3.2.khmpkg"),
     ("xz-target", "5.8.4", "xz-target-5.8.4.khmpkg"),
     ("expat-target", "2.9.0", "expat-target-2.9.0.khmpkg"),
     ("libcap-target", "2.78", "libcap-target-2.78.khmpkg"),
     ("libffi-target", "3.8.0", "libffi-target-3.8.0.khmpkg"),
     ("pcre2-target", "10.49", "pcre2-target-10.49.khmpkg"),
-    ("libunistring-target", "1.4.2", "libunistring-target-1.4.2.khmpkg"),
-    ('dbus-target', '1.16.2', 'dbus-target-1.16.2.khmpkg'),
-    ('grub-target', '2.14', 'grub-target-2.14.khmpkg'),
-    ('kmod-target', '34.2', 'kmod-target-34.2.khmpkg'),
-    ('eudev-target', '3.2.14', 'eudev-target-3.2.14.khmpkg'),
-    ('openrc-target', '0.64.1', 'openrc-target-0.64.1.khmpkg'),
-    ('util-linux-target', '2.42.4', 'util-linux-target-2.42.4.khmpkg'),
-    ('net-tools-target', '2.10', 'net-tools-target-2.10.khmpkg'),
-    ('kbd-target', '2.10.0', 'kbd-target-2.10.0.khmpkg'),
-    ('e2fsprogs-target', '1.47.4', 'e2fsprogs-target-1.47.4.khmpkg'),
+    ("dbus-target", "1.16.2", "dbus-target-1.16.2.khmpkg"),
+    ("grub-target", "2.14", "grub-target-2.14.khmpkg"),
+    ("kmod-target", "34.2", "kmod-target-34.2.khmpkg"),
+    ("eudev-target", "3.2.14", "eudev-target-3.2.14.khmpkg"),
+    ("openrc-target", "0.64.1", "openrc-target-0.64.1.khmpkg"),
+    ("util-linux-target", "2.42.4", "util-linux-target-2.42.4.khmpkg"),
+    ("net-tools-target", "2.10", "net-tools-target-2.10.khmpkg"),
+    ("kbd-target", "2.10.0", "kbd-target-2.10.0.khmpkg"),
+    ("e2fsprogs-target", "1.47.4", "e2fsprogs-target-1.47.4.khmpkg"),
 ]
 
 
