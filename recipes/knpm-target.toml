@@ -1,7 +1,7 @@
 name = "knpm-target"
 version = "0.1.0"
-source = "https://github.com/Khaymos/knpm/archive/9a11cf189cb3a520a1dfb9b22117a25e549b66f0.tar.gz"
-sha256 = "2a17b75857b5dfc675a96ee8ce8b1b310b48edae13b87188f974bd4ff2fc233d"
+source = "https://github.com/Khaymos/knpm/archive/275d9e42bcad6728c70eec31cb8206aac3f240f4.tar.gz"
+sha256 = "a3f7fd456e81fc51a7d1279ec2918d6ec0b26e6ed7ce7a2691b85b87fbe7939b"
 build_type = "target"
 depends = ["glibc", "gcc-runtime", "curl-target", "ca-certificates-target"]
 
