@@ -53,5 +53,30 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertLess(names.index("openssl-target"), names.index("curl-target"))
 
 
+    def test_openrc_archive_excludes_runlevel_links_pruned_by_rootfs_assembly(self) -> None:
+        builder = load_script("build_iso_packages", "build-iso-packages.py")
+        assembly = (ROOT / "scripts" / "assemble-rootfs.sh").read_text(
+            encoding="utf-8"
+        )
+
+        expected = {
+            f"etc/runlevels/{level}/{service}"
+            for level in ("boot", "default")
+            for service in ("hostname", "keymaps", "save-keymaps", "netmount")
+        }
+        self.assertEqual(set(builder.PACKAGE_EXCLUDES["openrc-target"]), expected)
+
+        # The service definition remains package-owned; only its runlevel links
+        # are omitted from the bootstrap archive and disabled in the rootfs.
+        self.assertNotIn(
+            'rm -f "$ROOTFS/etc/init.d/netmount"',
+            assembly,
+        )
+        self.assertIn(
+            'rm -f "$ROOTFS/etc/runlevels/$level/$service"',
+            assembly,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
