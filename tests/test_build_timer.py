@@ -69,7 +69,7 @@ class BuildTimerTests(unittest.TestCase):
         output = io.StringIO()
         with patch.object(kbuild, "all_recipe_order", return_value=list(kbuild.BOOTSTRAP_ORDER)):
             with patch.object(kbuild, "_ask_build_timer", return_value=True) as timer_mock:
-                with patch.object(kbuild.time, "monotonic", side_effect=[100.0, 165.5]):
+                with patch.object(kbuild, "time", SimpleNamespace(monotonic=Mock(side_effect=[100.0, 165.5]))):
                     with patch.object(kbuild, "build"):
                         with patch.object(kbuild, "promote"):
                             with patch.object(kbuild, "deploy"):
@@ -86,7 +86,7 @@ class BuildTimerTests(unittest.TestCase):
         output = io.StringIO()
         with patch.object(kbuild, "all_recipe_order", return_value=list(kbuild.BOOTSTRAP_ORDER)):
             with patch.object(kbuild, "_ask_build_timer", return_value=True):
-                with patch.object(kbuild.time, "monotonic", return_value=100.0):
+                with patch.object(kbuild, "time", SimpleNamespace(monotonic=Mock(return_value=100.0))):
                     with patch.object(kbuild, "build", side_effect=kbuild.KBuildError("test failure")):
                         with redirect_stdout(output):
                             with self.assertRaises(kbuild.KBuildError):
