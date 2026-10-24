@@ -8,8 +8,10 @@ temporary cross-bootstrap compiler that built it).
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 TOP = Path(__file__).resolve().parents[1]
@@ -69,6 +71,21 @@ PACKAGES_TO_BUILD = [
 ]
 
 
+# Rootfs assembly deliberately removes these OpenRC runlevel links so only the
+# services selected by KhaymOS are enabled. KNPM's strict "adopt" operation
+# verifies every package-manifest path against the assembled rootfs, so the ISO
+# bootstrap archive must omit the links that image assembly prunes. Keep service
+# scripts themselves in the package: for example, netmount stays installed but
+# is not enabled by a runlevel symlink.
+PACKAGE_EXCLUDES = {
+    "openrc-target": tuple(
+        f"etc/runlevels/{level}/{service}"
+        for level in ("boot", "default")
+        for service in ("hostname", "keymaps", "save-keymaps", "netmount")
+    ),
+}
+
+
 def fail(message: str) -> "NoReturn":
     print(f"build-iso-packages: error: {message}", file=sys.stderr)
     raise SystemExit(1)
@@ -96,29 +113,45 @@ def main() -> int:
                 + ", ".join(missing)
             )
 
-        command = [
-            sys.executable,
-            str(BUILDER),
-            "--name",
-            name,
-            "--version",
-            version,
-            "--stage",
-            str(stage),
-            "--output",
-            str(output),
-            "--arch",
-            "x86_64",
-            "--description",
-            f"KhaymOS system package {name}",
-        ]
-        if depends:
-            command.extend(["--depends", depends])
+        excluded_paths = PACKAGE_EXCLUDES.get(name, ())
+        with tempfile.TemporaryDirectory(prefix="khaymos-iso-package-") as temp_dir:
+            package_stage = stage
+            if excluded_paths:
+                package_stage = Path(temp_dir) / "stage"
+                shutil.copytree(stage, package_stage, symlinks=True)
 
-        print(f"=== Packaging {name} {version} ===", flush=True)
-        result = subprocess.run(command, check=False)
-        if result.returncode != 0:
-            return fail(f"failed to package {name}; see the error above")
+                for relative in excluded_paths:
+                    candidate = package_stage / relative
+                    if candidate.is_symlink() or candidate.is_file():
+                        candidate.unlink()
+                    elif candidate.exists():
+                        return fail(
+                            f"{name}: expected an excluded file or symlink, got: {relative}"
+                        )
+
+            command = [
+                sys.executable,
+                str(BUILDER),
+                "--name",
+                name,
+                "--version",
+                version,
+                "--stage",
+                str(package_stage),
+                "--output",
+                str(output),
+                "--arch",
+                "x86_64",
+                "--description",
+                f"KhaymOS system package {name}",
+            ]
+            if depends:
+                command.extend(["--depends", depends])
+
+            print(f"=== Packaging {name} {version} ===", flush=True)
+            result = subprocess.run(command, check=False)
+            if result.returncode != 0:
+                return fail(f"failed to package {name}; see the error above")
 
         seen.add(name)
 
