@@ -26,7 +26,7 @@ jobs:
         run: |
           bash -n scripts/assemble-rootfs.sh
           bash -n scripts/publish-repo.sh
-          python3 -m py_compile scripts/filter-ca-certificates.py scripts/write-meson-cross-file.py
+          python3 -m py_compile scripts/filter-ca-certificates.py scripts/write-meson-cross-file.py scripts/build-iso-packages.py scripts/bootstrap-knpm.py
 
       - name: Run repository and recipe tests
         run: python -m unittest discover -s tests -v
