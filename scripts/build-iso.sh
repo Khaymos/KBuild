@@ -16,7 +16,7 @@ INITRD_TMP="${INITRD_TMP:-$TOP/build/khaymos-rootfs.cpio.gz.new}"
 
 ISO_ROOT="${ISO_ROOT:-$TOP/build/khaymos-iso}"
 DIST="${DIST:-$TOP/dist}"
-ISO="${ISO:-$DIST/khaymos-0.1-dev-x86_64.iso}"
+ISO="${ISO:-$DIST/khaymos-0.1-x86_64.iso}"
 
 for tool in grub-mkrescue xorriso gzip cpio find python3; do
     command -v "$tool" >/dev/null 2>&1 || {
@@ -94,8 +94,8 @@ serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
 terminal_input serial
 terminal_output serial
 
-menuentry "KhaymOS GNU/Linux 0.1-dev (Live)" {
-    echo 'Loading Linux 7.2.10 ...'
+menuentry "KhaymOS GNU/Linux 0.1 (Live)" {
+    echo 'Loading KhaymOS Linux 7.2.10 ...'
     linux /boot/vmlinuz-khaymos-7.2.10 console=ttyS0,115200 rdinit=/init hostname=khaymos quiet loglevel=3 panic=10
     echo 'Loading initial ramdisk ...'
     initrd /boot/khaymos-rootfs.cpio.gz
