@@ -153,6 +153,9 @@ printf '%s\n' "$NEW_HOSTNAME" > "$MNT/etc/hostname"
 
 ROOT_UUID="$(blkid -s UUID -o value "$PART")"
 [[ "$ROOT_UUID" =~ ^[[:xdigit:]-]+$ ]] || fail "could not obtain the root filesystem UUID"
+ROOT_PARTUUID="$(blkid -s PARTUUID -o value "$PART")"
+[[ "$ROOT_PARTUUID" =~ ^[[:xdigit:]]{8}-[[:xdigit:]]{2}$ ]] ||
+    fail "could not obtain an MBR PARTUUID for the root partition"
 
 cat > "$MNT/etc/fstab" <<FSTAB
 # KhaymOS Installer v1
@@ -190,7 +193,7 @@ insmod search_fs_uuid
 search --no-floppy --fs-uuid --set=root $ROOT_UUID
 
 menuentry 'KhaymOS Linux 0.1' {
-    linux /boot/vmlinuz-khaymos-7.2.10 root=UUID=$ROOT_UUID rootfstype=ext4 rootwait rw init=/sbin/openrc-init
+    linux /boot/vmlinuz-khaymos-7.2.10 root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait rw init=/sbin/openrc-init
 }
 GRUB
 
@@ -206,6 +209,7 @@ echo "=== Installation completed ==="
 echo "Disk:       $DISK"
 echo "Root:       $PART"
 echo "Root UUID:  $ROOT_UUID"
+echo "Root PARTUUID: $ROOT_PARTUUID"
 echo "Hostname:   $NEW_HOSTNAME"
 echo
 echo "Power off or shut down the VM, detach the live ISO, and boot from the disk."

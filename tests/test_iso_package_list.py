@@ -228,7 +228,8 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn("lsblk -nrpo MOUNTPOINTS", installer)
         self.assertIn("mkfs.ext4 -F -m 1 -L KHAYMOS_ROOT", installer)
         self.assertIn("--target=i386-pc", installer)
-        self.assertIn("root=UUID=$ROOT_UUID rootfstype=ext4 rootwait", installer)
+        self.assertIn("root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait", installer)
+        self.assertIn('blkid -s PARTUUID -o value "$PART"', installer)
         self.assertIn("--exclude='./proc'", installer)
 
 if __name__ == "__main__":

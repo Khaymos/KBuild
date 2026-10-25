@@ -20,9 +20,10 @@ and all data on it will be destroyed.**
 
 The installer creates one bootable MBR partition, formats it ext4, copies the
 live system, asks for a hostname and installed root password, generates a
-new D-Bus machine ID, installs GRUB for legacy BIOS, and writes a UUID-based
-GRUB entry. Kernel storage drivers and ext4 are built in, so v1 boots the
-installed root filesystem directly without an initramfs.
+new D-Bus machine ID, installs GRUB for legacy BIOS, and writes a GRUB entry using the filesystem UUID to locate `/boot` and the
+partition UUID (`PARTUUID`) for the kernel's direct root-device lookup. Kernel
+storage drivers and ext4 are built in, so v1 boots the installed root filesystem
+directly without an initramfs.
 
 ## Limitations
 
