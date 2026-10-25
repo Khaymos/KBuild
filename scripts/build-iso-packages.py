@@ -8,6 +8,7 @@ temporary cross-bootstrap compiler that built it).
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,7 @@ from pathlib import Path
 
 TOP = Path(__file__).resolve().parents[1]
 DESTDIR = TOP / "destdir"
-PACKAGES = TOP / "packages"
+PACKAGES = Path(os.environ.get("KBUILD_PACKAGES_DIR", str(TOP / "packages"))).expanduser().absolute()
 BUILDER = TOP / "scripts/khmpkg-build.py"
 
 # name, version, runtime dependencies. Entries must be dependency-first.
