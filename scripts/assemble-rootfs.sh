@@ -47,6 +47,9 @@ echo "=== Copying deployed packages ==="
 mkdir -p "$ROOTFS"
 cp -a --no-preserve=ownership "$SYSROOT/." "$ROOTFS/"
 
+# The installer is a KhaymOS overlay, not a package from the development sysroot.
+install -Dm0755 "$TOP/scripts/khaymos-installer.sh" "$ROOTFS/usr/sbin/khaymos-installer"
+
 # KBuild bookkeeping belongs to the development sysroot, not the OS.
 rm -f "$ROOTFS/.kbuild-ownership.json" "$ROOTFS/.khaymos-target"
 

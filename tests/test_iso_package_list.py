@@ -140,6 +140,10 @@ class IsoPackageListTests(unittest.TestCase):
         )
         self.assertIn("cfg80211\nmac80211\nWIRELESS_MODULES", assembly)
         self.assertIn('ln -sfn /etc/init.d/iwd "$ROOTFS/etc/runlevels/default/iwd"', assembly)
+        self.assertIn(
+            'install -Dm0755 "$TOP/scripts/khaymos-installer.sh" "$ROOTFS/usr/sbin/khaymos-installer"',
+            assembly,
+        )
 
     def test_wireless_kernel_drivers_and_tethering_are_configured(self) -> None:
         kernel_recipe = (ROOT / "recipes" / "linux-kernel.toml").read_text(
@@ -213,6 +217,19 @@ class IsoPackageListTests(unittest.TestCase):
         )
         self.assertIn("--module MAC80211_HWSIM", kernel_recipe)
         self.assertIn("CONFIG_MAC80211_HWSIM=m", kernel_recipe)
+
+
+    def test_installer_requires_confirmation_and_configures_bios_root(self) -> None:
+        installer = (ROOT / "scripts" / "khaymos-installer.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('[[ "$CONFIRM" == "ERASE $DISK" ]]', installer)
+        self.assertIn("sfdisk --wipe always --wipe-partitions always", installer)
+        self.assertIn("lsblk -nrpo MOUNTPOINTS", installer)
+        self.assertIn("mkfs.ext4 -F -m 1 -L KHAYMOS_ROOT", installer)
+        self.assertIn("--target=i386-pc", installer)
+        self.assertIn("root=UUID=$ROOT_UUID rootfstype=ext4 rootwait", installer)
+        self.assertIn("--exclude='./proc'", installer)
 
 if __name__ == "__main__":
     unittest.main()
