@@ -230,6 +230,9 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn("mkfs.ext4 -F -m 1 -L KHAYMOS_ROOT", installer)
         self.assertIn("--target=i386-pc", installer)
         self.assertIn("root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait", installer)
+        self.assertIn('cat > "$MNT/sbin/khaymos-init"', installer)
+        self.assertIn("exec /sbin/openrc-init", installer)
+        self.assertIn("init=/sbin/khaymos-init", installer)
         self.assertIn('blkid -s PARTUUID -o value "$PART"', installer)
         self.assertIn("--exclude='./proc'", installer)
 

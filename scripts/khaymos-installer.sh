@@ -157,6 +157,49 @@ ROOT_PARTUUID="$(blkid -s PARTUUID -o value "$PART")"
 [[ "$ROOT_PARTUUID" =~ ^[[:xdigit:]]{8}-[[:xdigit:]]{2}$ ]] ||
     fail "could not obtain an MBR PARTUUID for the root partition"
 
+# Direct-root boot has no initramfs, so mount pseudo-filesystems before OpenRC.
+cat > "$MNT/sbin/khaymos-init" <<'KHAYMOS_INIT'
+#!/bin/bash
+set -u
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export HOME=/root
+export TERM=linux
+
+mkdir -p /dev /proc /sys /run /tmp
+
+if ! mountpoint -q /dev; then
+    mount -t devtmpfs devtmpfs /dev || echo "[WARN] Could not mount devtmpfs"
+fi
+mkdir -p /dev/pts /dev/shm
+if ! mountpoint -q /dev/pts; then
+    mount -t devpts devpts /dev/pts || echo "[WARN] Could not mount devpts"
+fi
+if ! mountpoint -q /proc; then
+    mount -t proc proc /proc || echo "[WARN] Could not mount proc"
+fi
+if ! mountpoint -q /sys; then
+    mount -t sysfs sysfs /sys || echo "[WARN] Could not mount sysfs"
+fi
+if ! mountpoint -q /run; then
+    mount -t tmpfs -o nosuid,nodev,mode=0755 tmpfs /run ||
+        echo "[WARN] Could not mount /run tmpfs"
+fi
+if ! mountpoint -q /tmp; then
+    mount -t tmpfs -o nosuid,nodev,mode=1777 tmpfs /tmp ||
+        echo "[WARN] Could not mount /tmp tmpfs"
+fi
+
+if [ -r /etc/hostname ]; then
+    cat /etc/hostname > /proc/sys/kernel/hostname ||
+        echo "[WARN] Could not set hostname"
+fi
+
+echo
+echo "KhaymOS Linux 0.1 | Starting OpenRC from installed root..."
+exec /sbin/openrc-init
+KHAYMOS_INIT
+chmod 0755 "$MNT/sbin/khaymos-init"
+
 cat > "$MNT/etc/fstab" <<FSTAB
 # KhaymOS Installer v1
 UUID=$ROOT_UUID / ext4 defaults,noatime 0 1
@@ -193,7 +236,7 @@ insmod search_fs_uuid
 search --no-floppy --fs-uuid --set=root $ROOT_UUID
 
 menuentry 'KhaymOS Linux 0.1' {
-    linux /boot/vmlinuz-khaymos-7.2.10 root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait rw init=/sbin/openrc-init
+    linux /boot/vmlinuz-khaymos-7.2.10 root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait rw init=/sbin/khaymos-init
 }
 GRUB
 
