@@ -151,11 +151,50 @@ class IsoPackageListTests(unittest.TestCase):
             "--module MT7921E",
             "--enable FW_LOADER_COMPRESS",
             "--enable FW_LOADER_COMPRESS_XZ",
+            "--enable KEYS",
+            "--enable CRYPTO_USER_API_HASH",
+            "--enable CRYPTO_USER_API_SKCIPHER",
+            "--enable CRYPTO_MD5",
+            "--enable CRYPTO_SHA1",
+            "--enable CRYPTO_SHA256",
+            "--enable CRYPTO_SHA512",
+            "--enable CRYPTO_AES",
+            "--enable CRYPTO_DES",
+            "--enable CRYPTO_ECB",
+            "--enable CRYPTO_CBC",
+            "--enable CRYPTO_CMAC",
+            "--enable CRYPTO_HMAC",
+            "--enable KEY_DH_OPERATIONS",
             "--module USB_USBNET",
             "--module USB_NET_RNDIS_HOST",
         ):
             with self.subTest(option=option):
                 self.assertIn(option, kernel_recipe)
+
+    def test_iwd_crypto_options_are_built_in_and_checked(self) -> None:
+        kernel_recipe = (ROOT / "recipes" / "linux-kernel.toml").read_text(
+            encoding="utf-8"
+        )
+        required = (
+            "CRYPTO_USER_API_HASH",
+            "CRYPTO_USER_API_SKCIPHER",
+            "CRYPTO_MD5",
+            "CRYPTO_SHA1",
+            "CRYPTO_SHA256",
+            "CRYPTO_SHA512",
+            "CRYPTO_AES",
+            "CRYPTO_DES",
+            "CRYPTO_ECB",
+            "CRYPTO_CBC",
+            "CRYPTO_CMAC",
+            "CRYPTO_HMAC",
+            "KEY_DH_OPERATIONS",
+        )
+        for option in required:
+            with self.subTest(option=option):
+                self.assertIn(f"--enable {option}", kernel_recipe)
+                self.assertIn(f"CONFIG_${{option}}=y", kernel_recipe)
+        self.assertIn("Required iwd crypto option is not built-in", kernel_recipe)
 
 
 if __name__ == "__main__":
