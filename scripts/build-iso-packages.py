@@ -22,6 +22,7 @@ BUILDER = TOP / "scripts/khmpkg-build.py"
 # name, version, runtime dependencies. Entries must be dependency-first.
 PACKAGES_TO_BUILD = [
     ("glibc", "2.44", ""),
+    ("linux-firmware-wifi-target", "20261019", ""),
     ("zlib-target", "1.3.2", "glibc"),
     ("gcc-runtime", "16.1.0", "glibc"),
     ("ncurses-target", "6.6", "glibc"),
@@ -86,6 +87,9 @@ PACKAGE_EXCLUDES = {
         for level in ("boot", "default")
         for service in ("hostname", "keymaps", "save-keymaps", "netmount")
     ),
+    # Rootfs assembly synthesizes the OpenRC service/config files for dhcpcd.
+    # Omit them from package ownership when the upstream staging tree provides them.
+    "dhcpcd-target": ("etc/init.d/dhcpcd", "etc/conf.d/dhcpcd"),
 }
 
 
