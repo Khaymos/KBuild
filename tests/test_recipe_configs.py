@@ -40,5 +40,30 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertIn("ca-certificates-target", recipe["depends"])
 
 
+    def test_iwd_has_openrc_compatible_cross_build_configuration(self) -> None:
+        recipe = kbuild.load_recipe("iwd-target")
+        self.assertEqual(recipe["version"], "3.12")
+        self.assertIn("dbus-target", recipe["depends"])
+        self.assertIn("openssl-target", recipe["depends"])
+        self.assertIn("readline-target", recipe["depends"])
+
+        build = "\\n".join(recipe.get("build", []))
+        self.assertIn("--disable-systemd-service", build)
+        self.assertIn("--with-dbus-datadir=/usr/share", build)
+        self.assertIn("PKG_CONFIG_SYSROOT_DIR=", build)
+
+    def test_wifi_firmware_source_is_pinned(self) -> None:
+        recipe = kbuild.load_recipe("linux-firmware-wifi-target")
+        self.assertEqual(recipe["version"], "20261019")
+        self.assertEqual(
+            recipe["source"],
+            "https://cdn.kernel.org/pub/linux/kernel/firmware/linux-firmware-20261019.tar.xz",
+        )
+        self.assertEqual(
+            recipe["sha256"],
+            "a10d1ab5baf2c74ba92e8c7cf313e691696c26bddfa6df00db795e48d70cd4ca",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
