@@ -64,6 +64,9 @@ class RecipeConfigurationTests(unittest.TestCase):
             "a10d1ab5baf2c74ba92e8c7cf313e691696c26bddfa6df00db795e48d70cd4ca",
         )
 
+        install_commands = "\\n".join(recipe.get("install", []))
+        self.assertIn("intel/iwlwifi", install_commands)
+
 
 if __name__ == "__main__":
     unittest.main()
