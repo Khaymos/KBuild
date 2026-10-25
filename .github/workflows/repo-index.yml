@@ -42,5 +42,6 @@ jobs:
           python3 kbuild.py verify wget-target
           python3 kbuild.py verify dhcpcd-target
           python3 kbuild.py verify iproute2-target
+          python3 kbuild.py verify iwd-target
           python3 kbuild.py verify knpm-target
 
