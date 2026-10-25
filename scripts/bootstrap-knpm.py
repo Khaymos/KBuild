@@ -18,7 +18,7 @@ KNPM_CANDIDATES = (
 )
 KNPM_HOST = next((candidate for candidate in KNPM_CANDIDATES if candidate.is_file()), KNPM_CANDIDATES[0])
 KNPM_STAGE = TOP / "destdir/knpm-target-0.1.0/usr/bin/knpm"
-PACKAGES = TOP / "packages"
+PACKAGES = Path(os.environ.get("KBUILD_PACKAGES_DIR", str(TOP / "packages"))).expanduser().absolute()
 
 BOOTSTRAP_PACKAGES = [
     ("glibc", "2.44", "glibc-2.44.khmpkg"),
