@@ -28,9 +28,14 @@ for path in \
     "$SYSROOT/usr/sbin/openrc-init" \
     "$SYSROOT/usr/sbin/openrc-run" \
     "$SYSROOT/usr/sbin/agetty" \
+    "$SYSROOT/usr/sbin/ip" \
+    "$SYSROOT/usr/sbin/dhcpcd" \
+    "$SYSROOT/usr/bin/iwctl" \
+    "$SYSROOT/usr/libexec/iwd" \
     "$SYSROOT/usr/lib/ld-linux-x86-64.so.2" \
     "$SYSROOT/boot/vmlinuz-khaymos-7.2.10" \
-    "$SYSROOT/lib/modules/7.2.10"
+    "$SYSROOT/lib/modules/7.2.10" \
+    "$SYSROOT/lib/firmware"
 do
     if [[ ! -e "$path" ]]; then
         echo "ERROR: required deployed path is missing: $path" >&2
@@ -61,6 +66,7 @@ mkdir -p \
     "$ROOTFS/etc/knpm" \
     "$ROOTFS/etc/conf.d" \
     "$ROOTFS/etc/init.d" \
+    "$ROOTFS/etc/iwd" \
     "$ROOTFS/etc/runlevels/default" \
     "$ROOTFS/dev/pts" \
     "$ROOTFS/dev/shm" \
@@ -72,6 +78,7 @@ mkdir -p \
     "$ROOTFS/tmp" \
     "$ROOTFS/var/empty" \
     "$ROOTFS/var/lib/dhcpcd" \
+    "$ROOTFS/var/lib/iwd" \
     "$ROOTFS/var/lib/dbus" \
     "$ROOTFS/var/lib/elogind" \
     "$ROOTFS/var/lib/polkit-1" \
@@ -426,6 +433,38 @@ start_pre() {
 }
 DBUS
 chmod 0755 "$ROOTFS/etc/init.d/dbus"
+
+echo
+echo "=== Configuring iwd for Wi-Fi ==="
+
+cat > "$ROOTFS/etc/iwd/main.conf" <<'IWD_CONF'
+[General]
+# dhcpcd manages IPv4/IPv6 addressing and DNS for wired and wireless links.
+EnableNetworkConfiguration=false
+IWD_CONF
+chmod 0644 "$ROOTFS/etc/iwd/main.conf"
+chmod 0700 "$ROOTFS/var/lib/iwd"
+
+cat > "$ROOTFS/etc/init.d/iwd" <<'IWD_INIT'
+#!/sbin/openrc-run
+
+description="iNet Wireless Daemon"
+command="/usr/libexec/iwd"
+command_background="yes"
+pidfile="/run/iwd.pid"
+
+depend() {
+    need dbus
+    before dhcpcd
+}
+
+start_pre() {
+    mkdir -p /var/lib/iwd
+    chmod 0700 /var/lib/iwd
+}
+IWD_INIT
+chmod 0755 "$ROOTFS/etc/init.d/iwd"
+ln -sfn /etc/init.d/iwd "$ROOTFS/etc/runlevels/default/iwd"
 
 echo
 echo "=== Preparing D-Bus machine ID ==="
