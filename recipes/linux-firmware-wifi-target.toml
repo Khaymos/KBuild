@@ -1,0 +1,14 @@
+name = "linux-firmware-wifi-target"
+version = "20261019"
+source = "https://cdn.kernel.org/pub/linux/kernel/firmware/linux-firmware-20261019.tar.xz"
+sha256 = "a10d1ab5baf2c74ba92e8c7cf313e691696c26bddfa6df00db795e48d70cd4ca"
+archive_root = "linux-firmware-20261019"
+build_type = "target"
+depends = []
+
+install = [
+  "install -d \"$DESTDIR/lib/firmware\" \"$DESTDIR/usr/share/licenses/linux-firmware\"",
+  "for pattern in iwlwifi*.ucode iwlwifi*.pnvm regulatory.db regulatory.db.p7s; do for source in $pattern; do if [[ -f \"$source\" ]]; then install -m 0644 \"$source\" \"$DESTDIR/lib/firmware/$(basename \"$source\")\"; fi; done; done",
+  "for directory in ath9k_htc ath10k ath11k ath12k brcm cypress mediatek mwlwifi qca rsi rtlwifi rtw88 rtw89 ti-connectivity; do if [[ -d \"$directory\" ]]; then install -d \"$DESTDIR/lib/firmware/$directory\"; cp -a \"$directory/.\" \"$DESTDIR/lib/firmware/$directory/\"; fi; done",
+  "for license_file in LICENSE* LICENCE* WHENCE; do if [[ -f \"$license_file\" ]]; then install -m 0644 \"$license_file\" \"$DESTDIR/usr/share/licenses/linux-firmware/$license_file\"; fi; done"
+]
