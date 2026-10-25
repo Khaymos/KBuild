@@ -136,6 +136,8 @@ class IsoPackageListTests(unittest.TestCase):
             "--module BRCMFMAC",
             "--module RTW89_8852AE",
             "--module MT7921E",
+            "--enable FW_LOADER_COMPRESS",
+            "--enable FW_LOADER_COMPRESS_XZ",
             "--module USB_NET_RNDIS_HOST",
         ):
             with self.subTest(option=option):
