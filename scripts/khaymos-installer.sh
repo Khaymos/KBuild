@@ -196,7 +196,7 @@ fi
 
 echo
 echo "KhaymOS Linux 0.1 | Starting OpenRC from installed root..."
-exec /sbin/openrc-init
+exec /sbin/init
 KHAYMOS_INIT
 chmod 0755 "$MNT/sbin/khaymos-init"
 
