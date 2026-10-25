@@ -151,6 +151,7 @@ class IsoPackageListTests(unittest.TestCase):
             "--module MT7921E",
             "--enable FW_LOADER_COMPRESS",
             "--enable FW_LOADER_COMPRESS_XZ",
+            "--enable RFKILL",
             "--enable KEYS",
             "--enable CRYPTO_USER_API_HASH",
             "--enable CRYPTO_USER_API_SKCIPHER",
@@ -194,6 +195,7 @@ class IsoPackageListTests(unittest.TestCase):
             with self.subTest(option=option):
                 self.assertIn(f"--enable {option}", kernel_recipe)
                 self.assertIn(f"CONFIG_${{option}}=y", kernel_recipe)
+        self.assertIn("for option in RFKILL CRYPTO_USER_API_HASH", kernel_recipe)
         self.assertIn("Required iwd crypto option is not built-in", kernel_recipe)
 
 
