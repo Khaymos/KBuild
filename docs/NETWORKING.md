@@ -67,7 +67,9 @@ If no wireless device appears, check that the adapter is supported by the
 running kernel and that its matching firmware is installed. Firmware is
 hardware-specific; the bundled firmware subset covers several common Intel,
 Atheros/Qualcomm, Broadcom/Cypress, MediaTek, and Realtek families, but it
-cannot guarantee support for every adapter.
+cannot guarantee support for every adapter. Building that subset from the
+upstream `linux-firmware-20261019.tar.xz` source currently downloads a 642 MB
+archive before extracting only the selected Wi-Fi firmware files.
 
 ## QEMU note
 
