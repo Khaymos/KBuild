@@ -142,6 +142,7 @@ class IsoPackageListTests(unittest.TestCase):
         for option in (
             "--module CFG80211",
             "--module MAC80211",
+            "--module MAC80211_HWSIM",
             "--module IWLWIFI",
             "--module ATH9K",
             "--module BRCMFMAC",
@@ -198,6 +199,14 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn("for option in RFKILL CRYPTO_USER_API_HASH", kernel_recipe)
         self.assertIn("Required iwd crypto option is not built-in", kernel_recipe)
 
+
+
+    def test_virtual_wifi_simulator_is_built_as_a_module(self) -> None:
+        kernel_recipe = (ROOT / "recipes" / "linux-kernel.toml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--module MAC80211_HWSIM", kernel_recipe)
+        self.assertIn("CONFIG_MAC80211_HWSIM=m", kernel_recipe)
 
 if __name__ == "__main__":
     unittest.main()
