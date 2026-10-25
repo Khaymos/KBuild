@@ -68,7 +68,7 @@ MIN_BYTES=$((8 * 1024 * 1024 * 1024))
 (( SIZE_BYTES >= MIN_BYTES )) ||
     fail "disk must be at least 8 GiB; detected $((SIZE_BYTES / 1024 / 1024 / 1024)) GiB"
 
-if lsblk -nrpo MOUNTPOINTS -- "$DISK" | grep -q '[^[:space:]]'; then
+if lsblk -nrpo MOUNTPOINTS -- "$DISK" | grep '[^[:space:]]' >/dev/null; then
     fail "one or more partitions on $DISK are mounted or in use; refusing to erase it"
 fi
 

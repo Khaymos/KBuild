@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -231,6 +232,17 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn("root=PARTUUID=$ROOT_PARTUUID rootfstype=ext4 rootwait", installer)
         self.assertIn('blkid -s PARTUUID -o value "$PART"', installer)
         self.assertIn("--exclude='./proc'", installer)
+
+
+    def test_installer_script_has_valid_bash_syntax(self) -> None:
+        installer = ROOT / "scripts" / "khaymos-installer.sh"
+        result = subprocess.run(
+            ["bash", "-n", str(installer)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 if __name__ == "__main__":
     unittest.main()
