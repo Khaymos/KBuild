@@ -435,6 +435,19 @@ DBUS
 chmod 0755 "$ROOTFS/etc/init.d/dbus"
 
 echo
+echo "=== Configuring kernel module autoload for Wi-Fi ==="
+
+# The OpenRC modules service is already enabled in the boot runlevel.
+# Load the shared wireless stack before default-runlevel services such as iwd.
+# Do not autoload mac80211_hwsim: it is only for virtual-radio testing.
+mkdir -p "$ROOTFS/etc/modules-load.d"
+cat > "$ROOTFS/etc/modules-load.d/khaymos-wireless.conf" <<'WIRELESS_MODULES'
+cfg80211
+mac80211
+WIRELESS_MODULES
+chmod 0644 "$ROOTFS/etc/modules-load.d/khaymos-wireless.conf"
+
+echo
 echo "=== Configuring iwd for Wi-Fi ==="
 
 cat > "$ROOTFS/etc/iwd/main.conf" <<'IWD_CONF'

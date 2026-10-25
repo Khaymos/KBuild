@@ -134,6 +134,12 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn('cat > "$ROOTFS/etc/init.d/iwd"', assembly)
         self.assertIn('need dbus', assembly)
         self.assertIn('EnableNetworkConfiguration=false', assembly)
+        self.assertIn(
+            'cat > "$ROOTFS/etc/modules-load.d/khaymos-wireless.conf"',
+            assembly,
+        )
+        self.assertIn("cfg80211\nmac80211\nWIRELESS_MODULES", assembly)
+        self.assertIn('ln -sfn /etc/init.d/iwd "$ROOTFS/etc/runlevels/default/iwd"', assembly)
 
     def test_wireless_kernel_drivers_and_tethering_are_configured(self) -> None:
         kernel_recipe = (ROOT / "recipes" / "linux-kernel.toml").read_text(
