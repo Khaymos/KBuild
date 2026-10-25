@@ -47,7 +47,7 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertIn("openssl-target", recipe["depends"])
         self.assertIn("readline-target", recipe["depends"])
 
-        build = "\\n".join(recipe.get("build", []))
+        build = "\n".join(recipe.get("build", []))
         self.assertIn("--disable-systemd-service", build)
         self.assertIn("--with-dbus-datadir=/usr/share", build)
         self.assertIn("PKG_CONFIG_SYSROOT_DIR=", build)
