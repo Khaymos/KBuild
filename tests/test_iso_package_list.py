@@ -94,6 +94,17 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertNotIn("0.1-dev", rootfs_script)
 
 
+    def test_package_archive_directory_can_be_overridden_for_iso_builds(self) -> None:
+        builder_script = (ROOT / "scripts" / "build-iso-packages.py").read_text(
+            encoding="utf-8"
+        )
+        bootstrap_script = (ROOT / "scripts" / "bootstrap-knpm.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('os.environ.get("KBUILD_PACKAGES_DIR"', builder_script)
+        self.assertIn('os.environ.get("KBUILD_PACKAGES_DIR"', bootstrap_script)
+
     def test_live_iso_contains_wired_and_wireless_networking(self) -> None:
         builder = load_script("build_iso_packages", "build-iso-packages.py")
         bootstrap = load_script("bootstrap_knpm", "bootstrap-knpm.py")
