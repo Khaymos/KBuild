@@ -12,7 +12,7 @@ build = [
 ]
 
 install = [
-  "make DESTDIR=\\\"$DESTDIR\\\" install",
+  "make DESTDIR=\"$DESTDIR\" install",
   """install -d "$DESTDIR/usr/share/dbus-1/system-services"
 cat > "$DESTDIR/usr/share/dbus-1/system-services/net.connman.iwd.service" <<'DBUS_SERVICE'
 [D-BUS Service]

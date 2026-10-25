@@ -53,7 +53,7 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertIn("PKG_CONFIG_SYSROOT_DIR=", build)
         self.assertIn('make -j"$(nproc)"', build)
 
-        install = "\\n".join(recipe.get("install", []))
+        install = "\n".join(recipe.get("install", []))
         self.assertIn("net.connman.iwd.service", install)
         self.assertIn("[D-BUS Service]", install)
         self.assertIn("Name=net.connman.iwd", install)
