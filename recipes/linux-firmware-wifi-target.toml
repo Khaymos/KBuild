@@ -11,5 +11,6 @@ install = [
   "for pattern in iwlwifi*.ucode iwlwifi*.pnvm regulatory.db regulatory.db.p7s; do for source in $pattern; do if [[ -f \"$source\" ]]; then install -m 0644 \"$source\" \"$DESTDIR/lib/firmware/$(basename \"$source\")\"; fi; done; done",
   "if [[ -d intel/iwlwifi ]]; then install -d \"$DESTDIR/lib/firmware/intel/iwlwifi\"; cp -a intel/iwlwifi/. \"$DESTDIR/lib/firmware/intel/iwlwifi/\"; fi",
   "for directory in ath9k_htc ath10k ath11k ath12k brcm cypress mediatek mwlwifi qca rsi rtlwifi rtw88 rtw89 ti-connectivity; do if [[ -d \"$directory\" ]]; then install -d \"$DESTDIR/lib/firmware/$directory\"; cp -a \"$directory/.\" \"$DESTDIR/lib/firmware/$directory/\"; fi; done",
+  "if [[ -d LICENSES ]]; then install -d \"$DESTDIR/usr/share/licenses/linux-firmware/LICENSES\"; cp -a LICENSES/. \"$DESTDIR/usr/share/licenses/linux-firmware/LICENSES/\"; fi",
   "for license_file in LICENSE* LICENCE* WHENCE; do if [[ -f \"$license_file\" ]]; then install -m 0644 \"$license_file\" \"$DESTDIR/usr/share/licenses/linux-firmware/$license_file\"; fi; done"
 ]

@@ -51,6 +51,7 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertIn("--disable-systemd-service", build)
         self.assertIn("--with-dbus-datadir=/usr/share", build)
         self.assertIn("PKG_CONFIG_SYSROOT_DIR=", build)
+        self.assertIn('make -j"$(nproc)"', build)
 
     def test_wifi_firmware_source_is_pinned(self) -> None:
         recipe = kbuild.load_recipe("linux-firmware-wifi-target")
@@ -66,6 +67,8 @@ class RecipeConfigurationTests(unittest.TestCase):
 
         install_commands = "\\n".join(recipe.get("install", []))
         self.assertIn("intel/iwlwifi", install_commands)
+        self.assertIn("if [[ -d LICENSES ]]", install_commands)
+        self.assertIn("cp -a LICENSES/.", install_commands)
 
 
 if __name__ == "__main__":
