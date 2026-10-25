@@ -146,9 +146,12 @@ class IsoPackageListTests(unittest.TestCase):
             "--module ATH9K",
             "--module BRCMFMAC",
             "--module RTW89_8852AE",
+            "--module RTW89_8852BE",
+            "--module RTW89_8852CE",
             "--module MT7921E",
             "--enable FW_LOADER_COMPRESS",
             "--enable FW_LOADER_COMPRESS_XZ",
+            "--module USB_USBNET",
             "--module USB_NET_RNDIS_HOST",
         ):
             with self.subTest(option=option):
