@@ -93,6 +93,13 @@ def main() -> int:
         (tree / "bin/bash").symlink_to("../usr/bin/bash")
         for directory in ("dev", "proc", "sys", "run", "newroot", "lower", "iso"):
             (tree / directory).mkdir(parents=True, exist_ok=True)
+        for name, mode, device in (
+            ("console", 0o600, (5, 1)),
+            ("null", 0o666, (1, 3)),
+            ("tty", 0o666, (5, 0)),
+        ):
+            node = tree / "dev" / name
+            os.mknod(node, mode | 0o20000, os.makedev(*device))
 
         init = tree / "init"
         init.write_text("""#!/bin/bash
