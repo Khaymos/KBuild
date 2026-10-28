@@ -70,7 +70,7 @@ CONFIG="$ROOTFS/boot/config-7.2.10"
     echo "Rebuild and deploy linux-kernel with the SquashFS live-boot options first." >&2
     exit 1
 }
-for option in BLK_DEV_LOOP OVERLAY_FS SQUASHFS SQUASHFS_XZ ISO9660_FS SCSI BLK_DEV_SD BLK_DEV_SR USB USB_STORAGE USB_XHCI_HCD USB_XHCI_PCI; do
+for option in BLK_DEV_LOOP OVERLAY_FS SQUASHFS SQUASHFS_XZ ISO9660_FS SCSI BLK_DEV_SD BLK_DEV_SR USB USB_PCI USB_STORAGE USB_XHCI_HCD USB_XHCI_PCI; do
     grep -qx "CONFIG_${option}=y" "$CONFIG" || {
         echo "ERROR: required live-boot kernel option is not built in: CONFIG_${option}=y" >&2
         echo "Rebuild and deploy the kernel recipe from the live-squashfs branch first." >&2
