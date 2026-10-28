@@ -42,13 +42,13 @@ def find_library(rootfs: Path, name: str) -> Path:
 def copy_elf(source: Path, destination: Path, rootfs: Path, tree: Path, copied: set[str]) -> None:
     source = source.resolve(strict=True)
     key = str(source)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if not destination.exists():
+        shutil.copy2(source, destination)
+        destination.chmod(source.stat().st_mode & 0o777)
     if key in copied:
         return
     copied.add(key)
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
-    destination.chmod(source.stat().st_mode & 0o777)
 
     interpreter_match = INTERP_RE.search(readelf("-l", source))
     if interpreter_match:
