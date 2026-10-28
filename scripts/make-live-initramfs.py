@@ -154,7 +154,7 @@ exec switch_root /newroot /sbin/init
         init.chmod(0o755)
 
         output.parent.mkdir(parents=True, exist_ok=True)
-        command = "find . -print0 | cpio --null -o --format=newc | gzip -9 > "$1""
+        command = 'find . -print0 | cpio --null -o --format=newc | gzip -9 > "$1"'
         subprocess.run(["bash", "-o", "pipefail", "-c", command, "_", str(output)], cwd=tree, check=True)
 
     print(f"Created minimal live initramfs: {output}")
