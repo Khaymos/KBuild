@@ -408,6 +408,16 @@ AGETTY
 ln -sfn /etc/init.d/agetty.ttyS0 \
     "$ROOTFS/etc/runlevels/default/agetty.ttyS0"
 
+# Provide a visible virtual-terminal login on laptop and desktop displays.
+ln -sfn agetty "$ROOTFS/etc/init.d/agetty.tty1"
+cat > "$ROOTFS/etc/conf.d/agetty.tty1" <<'AGETTY_TTY1'
+term_type="linux"
+agetty_options="--noclear"
+quiet="no"
+AGETTY_TTY1
+ln -sfn /etc/init.d/agetty.tty1 \
+    "$ROOTFS/etc/runlevels/default/agetty.tty1"
+
 # Start D-Bus before elogind on the default runlevel.
 ln -sfn /etc/init.d/dbus \
     "$ROOTFS/etc/runlevels/default/dbus"
