@@ -43,10 +43,11 @@ mkdir -p "$TOP/build"
 WORK="$(mktemp -d "$TOP/build/.live-initramfs.XXXXXX")"
 trap 'rm -rf -- "$WORK"' EXIT
 INITROOT="$WORK/root"
-mkdir -p "$INITROOT"/{dev,proc,sys,run,sysroot,tmp,usr/bin,usr/sbin,usr/lib,lib}
+mkdir -p "$INITROOT"/{dev,proc,sys,run,sysroot,tmp,etc,usr/bin,usr/sbin,usr/lib,lib}
 ln -s usr/bin "$INITROOT/bin"
 ln -s usr/sbin "$INITROOT/sbin"
 ln -s usr/lib "$INITROOT/lib64"
+ln -s ../proc/self/mounts "$INITROOT/etc/mtab"
 
 # Copy a target executable and its real file, preserving symlink names. Every
 # ELF dependency is then queued and copied recursively from this target rootfs.
