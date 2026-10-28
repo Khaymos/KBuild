@@ -54,7 +54,7 @@ echo
 echo "=== Validating kernel live-media support ==="
 CONFIG="$ROOTFS/boot/config-7.2.10"
 if [[ -r "$CONFIG" ]]; then
-    for option in ISO9660_FS SQUASHFS SQUASHFS_XZ OVERLAY_FS BLK_DEV_LOOP USB_STORAGE USB_XHCI_HCD USB_EHCI_HCD USB_HID HID_GENERIC INPUT_EVDEV; do
+    for option in BLK_DEV_SR ISO9660_FS SQUASHFS SQUASHFS_XZ OVERLAY_FS BLK_DEV_LOOP USB_STORAGE USB_UAS USB_XHCI_HCD USB_XHCI_PCI USB_EHCI_HCD USB_EHCI_PCI USB_OHCI_HCD USB_OHCI_HCD_PCI USB_UHCI_HCD USB_HID HID_GENERIC INPUT_EVDEV; do
         if ! grep -qx "CONFIG_${option}=y" "$CONFIG"; then
             echo "ERROR: kernel config lacks built-in CONFIG_${option}=y" >&2
             echo "Rebuild linux-kernel-target after updating recipes/linux-kernel.toml." >&2
