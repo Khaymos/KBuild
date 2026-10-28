@@ -34,6 +34,7 @@ class LiveSquashFSBootTests(unittest.TestCase):
             "ISO9660_FS",
             "BLK_DEV_SR",
             "USB_STORAGE",
+            "USB_PCI",
             "USB_XHCI_HCD",
             "USB_XHCI_PCI",
             "USB_EHCI_HCD",
