@@ -247,5 +247,85 @@ class IsoPackageListTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+
+    def test_squashfs_live_iso_uses_small_initramfs_and_writable_overlay(self) -> None:
+        builder = (ROOT / "scripts" / "build-live-iso-squashfs.sh").read_text(
+            encoding="utf-8"
+        )
+        initramfs = (ROOT / "scripts" / "make-live-initramfs.py").read_text(
+            encoding="utf-8"
+        )
+        kernel_recipe = (ROOT / "recipes" / "linux-kernel.toml").read_text(
+            encoding="utf-8"
+        )
+        for expected in (
+            "mksquashfs",
+            "rootfs.squashfs",
+            "make-live-initramfs.py",
+            "console=ttyS0,115200 console=tty0",
+            "loglevel=7 ignore_loglevel",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, builder)
+        for expected in (
+            "mount -t iso9660",
+            "mount -t squashfs -o loop,ro",
+            "mount -t overlay overlay",
+            "exec switch_root /newroot /sbin/init",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, initramfs)
+        for option in (
+            "ISO9660_FS",
+            "BLK_DEV_SR",
+            "SQUASHFS",
+            "SQUASHFS_XZ",
+            "OVERLAY_FS",
+            "BLK_DEV_LOOP",
+            "USB_STORAGE",
+            "USB_UAS",
+            "USB_XHCI_HCD",
+            "USB_EHCI_HCD",
+            "USB_HID",
+            "HID_GENERIC",
+            "INPUT_EVDEV",
+        ):
+            with self.subTest(option=option):
+                self.assertIn(f"--enable {option}", kernel_recipe)
+                self.assertIn(f"CONFIG_${{option}}=y", kernel_recipe)
+
+        assembly = (ROOT / "scripts" / "assemble-rootfs.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"$ROOTFS/etc/runlevels/default/agetty.tty1"', assembly)
+
+    def test_squashfs_live_build_scripts_have_valid_syntax(self) -> None:
+        shell_scripts = (
+            ROOT / "scripts" / "build-live-iso-squashfs.sh",
+        )
+        for script in shell_scripts:
+            with self.subTest(script=script.name):
+                result = subprocess.run(
+                    ["bash", "-n", str(script)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+        helper = ROOT / "scripts" / "make-live-initramfs.py"
+        result = subprocess.run(
+            [
+                "python3",
+                "-c",
+                "from pathlib import Path; compile(Path(r'%s').read_text(), r'%s', 'exec')"
+                % (helper, helper),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 if __name__ == "__main__":
     unittest.main()
