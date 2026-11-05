@@ -22,6 +22,7 @@ PACKAGES = Path(os.environ.get("KBUILD_PACKAGES_DIR", str(TOP / "packages"))).ex
 
 BOOTSTRAP_PACKAGES = [
     ("glibc", "2.44", "glibc-2.44.khmpkg"),
+    ("dosfstools-target", "4.2", "dosfstools-target-4.2.khmpkg"),
     ("linux-firmware-wifi-target", "20261019", "linux-firmware-wifi-target-20261019.khmpkg"),
     ("zlib-target", "1.3.2", "zlib-target-1.3.2.khmpkg"),
     ("gcc-runtime", "16.1.0", "gcc-runtime-16.1.0.khmpkg"),
