@@ -327,5 +327,40 @@ class IsoPackageListTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+
+    def test_installer_supports_uefi_gpt_and_preserves_bios(self) -> None:
+        installer = (ROOT / "scripts" / "khaymos-installer.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('if [[ -d /sys/firmware/efi ]]', installer)
+        self.assertIn('label: gpt', installer)
+        self.assertIn('type=U, name="EFI System"', installer)
+        self.assertIn('type=L, name="KhaymOS Root"', installer)
+        self.assertIn('mkfs.fat -F 32 -n KHAYMOS_EFI', installer)
+        self.assertIn('--target=x86_64-efi', installer)
+        self.assertIn('--removable', installer)
+        self.assertIn('--no-nvram', installer)
+        self.assertIn('EFI/BOOT/BOOTX64.EFI', installer)
+        self.assertIn('UUID=$ESP_UUID /boot/efi vfat', installer)
+        self.assertIn('PARTITION_MODULE=part_gpt', installer)
+        self.assertIn('label: dos', installer)
+        self.assertIn('--target=i386-pc', installer)
+        self.assertIn('PARTITION_MODULE=part_msdos', installer)
+
+    def test_dosfstools_is_in_iso_build_and_knpm_bootstrap_lists(self) -> None:
+        builder = load_script("build_iso_packages", "build-iso-packages.py")
+        bootstrap = load_script("bootstrap_knpm", "bootstrap-knpm.py")
+        self.assertIn(("dosfstools-target", "4.2", "glibc"), builder.PACKAGES_TO_BUILD)
+        self.assertIn(
+            ("dosfstools-target", "4.2", "dosfstools-target-4.2.khmpkg"),
+            bootstrap.BOOTSTRAP_PACKAGES,
+        )
+        build_rootfs = (ROOT / "scripts" / "assemble-rootfs.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"$SYSROOT/usr/sbin/mkfs.fat"', build_rootfs)
+        self.assertIn('"$SYSROOT/usr/lib/grub/x86_64-efi/modinfo.sh"', build_rootfs)
+
+
 if __name__ == "__main__":
     unittest.main()
