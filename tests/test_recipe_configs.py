@@ -78,5 +78,35 @@ class RecipeConfigurationTests(unittest.TestCase):
         self.assertIn("cp -a LICENSES/.", install_commands)
 
 
+
+    def test_grub_recipe_builds_bios_and_x86_64_efi_platforms(self) -> None:
+        recipe = kbuild.load_recipe("grub-target")
+        build = "\\n".join(recipe.get("build", []))
+        install = "\\n".join(recipe.get("install", []))
+
+        self.assertIn("--target=i386", build)
+        self.assertIn("--with-platform=pc", build)
+        self.assertIn("--target=x86_64", build)
+        self.assertIn("--with-platform=efi", build)
+        self.assertIn("build-khaymos-pc", install)
+        self.assertIn("build-khaymos-efi", install)
+        self.assertIn("i386-pc/boot.img", install)
+        self.assertIn("x86_64-efi/modinfo.sh", install)
+
+    def test_dosfstools_recipe_installs_fat_formatter(self) -> None:
+        recipe = kbuild.load_recipe("dosfstools-target")
+        self.assertEqual(recipe["version"], "4.2")
+        self.assertIn("--enable-compat-symlinks", "\\n".join(recipe["build"]))
+        self.assertIn("$DESTDIR/usr/sbin/mkfs.fat", "\\n".join(recipe["install"]))
+
+    def test_kernel_recipe_enables_uefi_and_fat_support(self) -> None:
+        recipe = kbuild.load_recipe("linux-kernel")
+        build = "\\n".join(recipe.get("build", []))
+        for option in ("EFI", "EFI_STUB", "EFI_PARTITION", "FAT_FS", "MSDOS_FS", "VFAT_FS"):
+            with self.subTest(option=option):
+                self.assertIn(f"--enable {option}", build)
+                self.assertIn(f"CONFIG_${{option}}=y", build)
+
+
 if __name__ == "__main__":
     unittest.main()
