@@ -30,6 +30,10 @@ for path in \
     "$SYSROOT/usr/sbin/agetty" \
     "$SYSROOT/usr/sbin/ip" \
     "$SYSROOT/usr/sbin/dhcpcd" \
+    "$SYSROOT/usr/sbin/mkfs.fat" \
+    "$SYSROOT/usr/sbin/grub-install" \
+    "$SYSROOT/usr/lib/grub/i386-pc/boot.img" \
+    "$SYSROOT/usr/lib/grub/x86_64-efi/modinfo.sh" \
     "$SYSROOT/usr/bin/iwctl" \
     "$SYSROOT/usr/libexec/iwd" \
     "$SYSROOT/usr/lib/ld-linux-x86-64.so.2" \
