@@ -1,0 +1,18 @@
+name = "dosfstools-target"
+version = "4.2"
+source = "https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz"
+sha256 = "64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527"
+archive_root = "dosfstools-4.2"
+build_type = "target"
+depends = ["glibc"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --mandir=/usr/share/man --docdir=/usr/share/doc/dosfstools-4.2 --enable-compat-symlinks --without-udev",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "test -x \"$DESTDIR/usr/sbin/mkfs.fat\"",
+  "rm -f \"$DESTDIR/usr/share/info/dir\""
+]
