@@ -23,6 +23,7 @@ BUILDER = TOP / "scripts/khmpkg-build.py"
 # name, version, runtime dependencies. Entries must be dependency-first.
 PACKAGES_TO_BUILD = [
     ("glibc", "2.44", ""),
+    ("dosfstools-target", "4.2", "glibc"),
     ("linux-firmware-wifi-target", "20261019", ""),
     ("zlib-target", "1.3.2", "glibc"),
     ("gcc-runtime", "16.1.0", "glibc"),
