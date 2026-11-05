@@ -1,0 +1,9 @@
+name = "nvme-cli-target"
+version = "3.1"
+source = "https://github.com/linux-nvme/nvme-cli/archive/refs/tags/v3.1.tar.gz"
+sha256 = "8a6879f1f2af53743c03a8f77f247261306300d3f3b0edfd242c5f646bdfdccb"
+archive_root = "nvme-cli-3.1"
+build_type = "target"
+depends = ["glibc", "json-c-target"]
+build = ["python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini", "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --buildtype=release --wrap-mode=nofallback -Ddocs=false -Dtests=false -Dexamples=false -Dpython=disabled -Dfabrics=disabled -Dmi=disabled -Dtop=disabled -Dnvme-discoverd=disabled -Dnvme-keysd=disabled -Dnvmf-autoconnect=disabled -Dlibdbus=disabled -Dliburing=disabled -Dlibkmod=disabled -Dopenssl=disabled -Dkeyutils=disabled -Dlibarchive=disabled -Djson-c=enabled build", "ninja -C build -j\"$(nproc)\""]
+install = ["meson install -C build --destdir \"$DESTDIR\""]

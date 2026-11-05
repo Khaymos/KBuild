@@ -1,0 +1,9 @@
+name = "libusb-target"
+version = "1.0.30"
+source = "https://github.com/libusb/libusb/releases/download/v1.0.30/libusb-1.0.30.tar.bz2"
+sha256 = "fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf"
+archive_root = "libusb-1.0.30"
+build_type = "target"
+depends = ["glibc", "eudev-target"]
+build = ["PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --disable-static --enable-shared --enable-udev --disable-examples-build", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

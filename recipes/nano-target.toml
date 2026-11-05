@@ -1,0 +1,9 @@
+name = "nano-target"
+version = "9.3"
+source = "https://www.nano-editor.org/dist/v9/nano-9.3.tar.xz"
+sha256 = "a9affc52c9596ee0682bcdd4ceb3c0b235eb221d83d733dfd9b0dff45897cb0d"
+archive_root = "nano-9.3"
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+build = ["PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc --disable-nls --enable-color --enable-nanorc", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

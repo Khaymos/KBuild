@@ -1,0 +1,9 @@
+name = "chrony-target"
+version = "4.9"
+source = "https://chrony-project.org/releases/chrony-4.9.tar.gz"
+sha256 = "4924c6f530105bcd5b9e9e33c48a2ae1bfd889222c8480bc41601110efc864d0"
+archive_root = "chrony-4.9"
+build_type = "target"
+depends = ["glibc", "libcap-target"]
+build = ["CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\" CPPFLAGS=\"-I$SYSROOT/usr/include\" ./configure --host-system=Linux --host-machine=x86_64 --prefix=/usr --with-user=chrony --without-tomcrypt --without-nss --without-seccomp --without-editline --disable-readline --without-gnutls --without-nettle", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

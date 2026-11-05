@@ -1,0 +1,9 @@
+name = "efibootmgr-target"
+version = "18"
+source = "https://github.com/rhboot/efibootmgr/archive/refs/tags/18.tar.gz"
+sha256 = "442867d12f8525034a404fc8af3036dba8e1fc970998af2486c3b940dfad0874"
+archive_root = "efibootmgr-18"
+build_type = "target"
+depends = ["glibc", "efivar-target", "popt-target"]
+build = ["PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" make -j\"$(nproc)\" CC=\"$CC\" CCLD=\"$CC\" AR=\"$AR\" NM=\"$NM\" RANLIB=\"$RANLIB\" PKG_CONFIG=pkg-config EFIDIR=KhaymOS"]
+install = ["make DESTDIR=\"$DESTDIR\" CC=\"$CC\" PKG_CONFIG=pkg-config EFIDIR=KhaymOS prefix=/usr libdir=/usr/lib bindir=/usr/bin sbindir=/usr/sbin install"]

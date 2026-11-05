@@ -1,0 +1,9 @@
+name = "json-c-target"
+version = "0.18"
+source = "https://s3.amazonaws.com/json-c_releases/releases/json-c-0.18.tar.gz"
+sha256 = "876ab046479166b869afc6896d288183bbc0e5843f141200c677b3e8dfb11724"
+archive_root = "json-c-0.18"
+build_type = "target"
+depends = ["glibc"]
+build = ["cmake -S . -B build -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DCMAKE_C_COMPILER=\"$CC\" -DCMAKE_SYSROOT=\"$SYSROOT\" -DCMAKE_FIND_ROOT_PATH=\"$SYSROOT\" -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_APPS=OFF -DDISABLE_EXTRA_LIBS=ON", "cmake --build build -j\"$(nproc)\""]
+install = ["DESTDIR=\"$DESTDIR\" cmake --install build"]

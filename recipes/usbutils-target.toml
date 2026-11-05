@@ -1,0 +1,9 @@
+name = "usbutils-target"
+version = "019"
+source = "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-019.tar.xz"
+sha256 = "659f40c440e31ba865c52c818a33d3ba6a97349e3353f8b1985179cb2aa71ec5"
+archive_root = "usbutils-019"
+build_type = "target"
+depends = ["glibc", "libusb-target", "eudev-target"]
+build = ["python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini", "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --buildtype=release --wrap-mode=nofallback build", "ninja -C build -j\"$(nproc)\""]
+install = ["meson install -C build --destdir \"$DESTDIR\""]

@@ -30,6 +30,23 @@ for path in \
     "$SYSROOT/usr/sbin/agetty" \
     "$SYSROOT/usr/sbin/ip" \
     "$SYSROOT/usr/sbin/dhcpcd" \
+    "$SYSROOT/usr/bin/lspci" \
+    "$SYSROOT/usr/bin/lsusb" \
+    "$SYSROOT/usr/bin/ping" \
+    "$SYSROOT/usr/bin/less" \
+    "$SYSROOT/usr/bin/nano" \
+    "$SYSROOT/usr/bin/vim" \
+    "$SYSROOT/usr/bin/vi" \
+    "$SYSROOT/usr/bin/mmc" \
+    "$SYSROOT/usr/bin/chronyc" \
+    "$SYSROOT/usr/bin/doas" \
+    "$SYSROOT/usr/share/bash-completion/bash_completion" \
+    "$SYSROOT/usr/sbin/ethtool" \
+    "$SYSROOT/usr/sbin/chronyd" \
+    "$SYSROOT/usr/sbin/logrotate" \
+    "$SYSROOT/usr/sbin/smartctl" \
+    "$SYSROOT/usr/sbin/nvme" \
+    "$SYSROOT/usr/sbin/efibootmgr" \
     "$SYSROOT/usr/sbin/mkfs.fat" \
     "$SYSROOT/usr/sbin/grub-install" \
     "$SYSROOT/usr/bin/grub-mkimage" \
@@ -92,6 +109,11 @@ mkdir -p \
     "$ROOTFS/var/lib/dbus" \
     "$ROOTFS/var/lib/elogind" \
     "$ROOTFS/var/lib/polkit-1" \
+    "$ROOTFS/var/lib/chrony" \
+    "$ROOTFS/var/log/chrony" \
+    "$ROOTFS/run/chrony" \
+    "$ROOTFS/etc/profile.d" \
+    "$ROOTFS/etc/logrotate.d" \
     "$ROOTFS/var/log" \
     "$ROOTFS/var/mail" \
     "$ROOTFS/var/spool" \
@@ -155,6 +177,7 @@ daemon:x:2:2:daemon:/sbin:/usr/bin/false
 messagebus:x:81:81:D-Bus system message bus:/run/dbus:/usr/bin/false
 dhcpcd:x:68:68:DHCP client privilege separation:/var/lib/dhcpcd:/usr/bin/false
 polkitd:x:102:102:PolicyKit daemon:/var/lib/polkit-1:/usr/bin/false
+chrony:x:991:991:Chrony time daemon:/var/lib/chrony:/usr/bin/false
 nobody:x:65534:65534:nobody:/var/empty:/usr/bin/false
 PASSWD
 
@@ -184,6 +207,7 @@ input:x:97:
 messagebus:x:81:
 dhcpcd:x:68:
 polkitd:x:102:
+chrony:x:991:
 users:x:1000:
 nogroup:x:65534:
 GROUP
@@ -195,6 +219,7 @@ daemon:!:20000:0:99999:7:::
 messagebus:!:20000:0:99999:7:::
 dhcpcd:!:20000:0:99999:7:::
 polkitd:!:20000:0:99999:7:::
+chrony:!:20000:0:99999:7:::
 nobody:!:20000:0:99999:7:::
 SHADOW
 
@@ -224,6 +249,7 @@ input:!::
 messagebus:!::
 dhcpcd:!::
 polkitd:!::
+chrony:!::
 users:!::
 nogroup:!::
 GSHADOW
@@ -316,6 +342,51 @@ Welcome to KhaymOS Linux 0.1.
 MOTD
 
 echo
+echo "=== Configuring Base utilities ==="
+cat > "$ROOTFS/etc/doas.conf" <<'DOAS'
+permit persist :wheel
+DOAS
+chmod 0600 "$ROOTFS/etc/doas.conf"
+
+if [[ ! -e "$ROOTFS/etc/profile" ]]; then
+    cat > "$ROOTFS/etc/profile" <<'PROFILE'
+for profile_file in /etc/profile.d/*.sh; do
+    if [[ -r "$profile_file" ]]; then
+        . "$profile_file"
+    fi
+done
+unset profile_file
+PROFILE
+fi
+
+cat > "$ROOTFS/etc/profile.d/10-khaymos-bash-completion.sh" <<'BASH_COMPLETION'
+if [[ -n "$BASH_VERSION" && -r /usr/share/bash-completion/bash_completion ]]; then
+    . /usr/share/bash-completion/bash_completion
+fi
+BASH_COMPLETION
+chmod 0644 "$ROOTFS/etc/profile.d/10-khaymos-bash-completion.sh"
+
+cat > "$ROOTFS/etc/chrony.conf" <<'CHRONY_CONF'
+pool pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+CHRONY_CONF
+chmod 0644 "$ROOTFS/etc/chrony.conf"
+
+cat > "$ROOTFS/etc/logrotate.conf" <<'LOGROTATE_CONF'
+weekly
+rotate 4
+create
+dateext
+missingok
+notifempty
+include /etc/logrotate.d
+LOGROTATE_CONF
+chmod 0644 "$ROOTFS/etc/logrotate.conf"
+
+echo
 echo "=== Installing the default KNPM mirrorlist ==="
 
 if [[ ! -s "$TOP/config/official.mirrorlist" ]]; then
@@ -401,6 +472,25 @@ fi
 
 mkdir -p "$ROOTFS/etc/runlevels/default"
 ln -sfn /etc/init.d/dhcpcd "$ROOTFS/etc/runlevels/default/dhcpcd"
+
+cat > "$ROOTFS/etc/init.d/chronyd" <<'CHRONY_INIT'
+#!/sbin/openrc-run
+description="Chrony NTP daemon"
+command="/usr/sbin/chronyd"
+command_args="-d -f /etc/chrony.conf"
+command_background="yes"
+pidfile="/run/chronyd.pid"
+depend() {
+    need localmount
+    after bootmisc dhcpcd
+}
+start_pre() {
+    mkdir -p /run/chrony /var/lib/chrony /var/log/chrony
+    chown chrony:chrony /run/chrony /var/lib/chrony /var/log/chrony
+}
+CHRONY_INIT
+chmod 0755 "$ROOTFS/etc/init.d/chronyd"
+ln -sfn /etc/init.d/chronyd "$ROOTFS/etc/runlevels/default/chronyd"
 
 # Configure a normal serial login; no autologin or skipped authentication.
 ln -sfn agetty "$ROOTFS/etc/init.d/agetty.ttyS0"
@@ -610,6 +700,8 @@ chown 68:68 "$ROOTFS/var/lib/dhcpcd"
 chmod 0750 "$ROOTFS/var/lib/dhcpcd"
 chown 102:102 "$ROOTFS/var/lib/polkit-1"
 chmod 0750 "$ROOTFS/var/lib/polkit-1"
+chown 991:991 "$ROOTFS/var/lib/chrony" "$ROOTFS/var/log/chrony"
+chmod 0750 "$ROOTFS/var/lib/chrony" "$ROOTFS/var/log/chrony"
 
 echo
 echo "=== Root filesystem assembled ==="

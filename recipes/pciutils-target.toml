@@ -1,0 +1,9 @@
+name = "pciutils-target"
+version = "3.15.0"
+source = "https://www.kernel.org/pub/software/utils/pciutils/pciutils-3.15.0.tar.xz"
+sha256 = "c02940f430841ecf158d5d9a50007afc4d5353c8678a2455003ca0b2c4e9f5ff"
+archive_root = "pciutils-3.15.0"
+build_type = "target"
+depends = ["glibc", "zlib-target"]
+build = ["make -j\"$(nproc)\" CROSS_COMPILE=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-\" HOST=x86_64-linux OPT=\"$CFLAGS -std=gnu99\" LDFLAGS=\"$LDFLAGS\" DNS=no ZLIB=yes SHARED=yes LIBKMOD=no HWDB=no"]
+install = ["make DESTDIR=\"$DESTDIR\" PREFIX=/usr BINDIR=/usr/bin SBINDIR=/usr/sbin LSPCIDIR=/usr/bin SHAREDIR=/usr/share IDSDIR=/usr/share/hwdata MANDIR=/usr/share/man LIBDIR=/usr/lib INCDIR=/usr/include PKGCFDIR=/usr/lib/pkgconfig install install-lib"]

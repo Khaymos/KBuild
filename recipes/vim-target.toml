@@ -1,0 +1,9 @@
+name = "vim-target"
+version = "9.2.0943"
+source = "https://github.com/vim/vim/archive/refs/tags/v9.2.0943.tar.gz"
+sha256 = "9b90b23241007b20ba89b7b00e6202008f4ff5b5278974d42aa199867c2eada5"
+archive_root = "vim-9.2.0943"
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+build = ["cd src && vim_cv_toupper_broken=no vim_cv_terminfo=yes vim_cv_tgetent=zero vim_cv_tty_group=world vim_cv_tty_mode=0620 vim_cv_getcwd_broken=no vim_cv_stat_ignores_slash=yes vim_cv_memmove_handles_overlap=yes ac_cv_sizeof_int=4 ac_cv_small_wchar_t=no PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --with-tlib=ncursesw --enable-gui=no --without-x --disable-nls --disable-acl --disable-gpm --disable-selinux --disable-pythoninterp --disable-python3interp --disable-rubyinterp --disable-perlinterp --disable-luainterp --disable-tclinterp", "make -C src -j\"$(nproc)\""]
+install = ["make -C src DESTDIR=\"$DESTDIR\" install", "test -x \"$DESTDIR/usr/bin/vim\"", "ln -sfn vim \"$DESTDIR/usr/bin/vi\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

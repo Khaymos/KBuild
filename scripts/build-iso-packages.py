@@ -74,6 +74,28 @@ PACKAGES_TO_BUILD = [
     ("dhcpcd-target", "10.2.4", "glibc"),
     ("kbd-target", "2.10.0", "glibc,zlib-target,ncurses-target"),
     ("e2fsprogs-target", "1.47.4", "glibc,zlib-target,util-linux-target"),
+    ("libxcrypt-target", "4.5.2", "glibc"),
+    ("linux-pam-target", "1.7.3", "glibc,libxcrypt-target"),
+    ("shadow-target", "4.20.3", "glibc,libxcrypt-target,linux-pam-target"),
+    ("popt-target", "1.19", "glibc"),
+    ("json-c-target", "0.18", "glibc"),
+    ("libusb-target", "1.0.30", "glibc,eudev-target"),
+    ("pciutils-target", "3.15.0", "glibc,zlib-target"),
+    ("usbutils-target", "019", "glibc,libusb-target,eudev-target"),
+    ("iputils-target", "20250605", "glibc"),
+    ("ethtool-target", "7.2", "glibc"),
+    ("less-target", "710", "glibc,ncurses-target"),
+    ("nano-target", "9.3", "glibc,ncurses-target"),
+    ("vim-target", "9.2.0943", "glibc,ncurses-target"),
+    ("bash-completion-target", "2.18.0", "bash-target"),
+    ("chrony-target", "4.9", "glibc,libcap-target"),
+    ("logrotate-target", "3.22.0", "glibc,popt-target"),
+    ("smartmontools-target", "7.5", "glibc"),
+    ("nvme-cli-target", "3.1", "glibc,json-c-target"),
+    ("mmc-utils-target", "1.0", "glibc"),
+    ("efivar-target", "39", "glibc"),
+    ("efibootmgr-target", "18", "glibc,efivar-target,popt-target"),
+    ("opendoas-target", "6.8.2", "glibc,libxcrypt-target"),
 ]
 
 
@@ -92,6 +114,8 @@ PACKAGE_EXCLUDES = {
     # Rootfs assembly synthesizes the OpenRC service/config files for dhcpcd.
     # Omit them from package ownership when the upstream staging tree provides them.
     "dhcpcd-target": ("etc/init.d/dhcpcd", "etc/conf.d/dhcpcd"),
+    "chrony-target": ("etc/chrony.conf",),
+    "logrotate-target": ("etc/logrotate.conf",),
 }
 
 

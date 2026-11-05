@@ -1,0 +1,9 @@
+name = "mmc-utils-target"
+version = "1.0"
+source = "https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/snapshot/mmc-utils-1.0.tar.gz"
+sha256 = "39e6a89e06b53f99816f110af6743d1adc82220b26c51b0c3fd0a11ccf4206c2"
+archive_root = "mmc-utils-1.0"
+build_type = "target"
+depends = ["glibc"]
+build = ["make -j\"$(nproc)\" CC=\"$CC\" CFLAGS=\"$CFLAGS\""]
+install = ["make prefix=/usr DESTDIR=\"$DESTDIR\" install"]

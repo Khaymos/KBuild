@@ -1,0 +1,9 @@
+name = "smartmontools-target"
+version = "7.5"
+source = "https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.5/smartmontools-7.5.tar.gz"
+sha256 = "690b83ca331378da9ea0d9d61008c4b22dde391387b9bbad7f29387f2595f76e"
+archive_root = "smartmontools-7.5"
+build_type = "target"
+depends = ["glibc"]
+build = ["./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sbindir=/usr/sbin --sysconfdir=/etc --without-libcap-ng --without-selinux --without-libsystemd", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

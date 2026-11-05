@@ -364,6 +364,38 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn('"$SYSROOT/usr/sbin/grub-probe"', build_rootfs)
         self.assertIn('"$SYSROOT/usr/bin/grub-mkrelpath"', build_rootfs)
 
+    def test_base_utilities_are_in_the_iso_and_knpm_bootstrap(self) -> None:
+        builder = load_script("build_iso_packages", "build-iso-packages.py")
+        bootstrap = load_script("bootstrap_knpm", "bootstrap-knpm.py")
+        names = [name for name, _version, _depends in builder.PACKAGES_TO_BUILD]
+        registered = [name for name, _version, _filename in bootstrap.BOOTSTRAP_PACKAGES]
+        utilities = (
+            "libxcrypt-target", "linux-pam-target", "shadow-target", "popt-target",
+            "json-c-target", "libusb-target", "pciutils-target", "usbutils-target",
+            "iputils-target", "ethtool-target", "less-target", "nano-target", "vim-target",
+            "bash-completion-target", "chrony-target", "logrotate-target",
+            "smartmontools-target", "nvme-cli-target", "mmc-utils-target",
+            "efivar-target", "efibootmgr-target", "opendoas-target",
+        )
+        for name in utilities:
+            with self.subTest(package=name):
+                self.assertIn(name, names)
+                self.assertIn(name, registered)
+
+    def test_base_utility_defaults_are_assembled(self) -> None:
+        assembly = (ROOT / "scripts" / "assemble-rootfs.sh").read_text(encoding="utf-8")
+        for expected in (
+            "chrony:x:991:991:", "permit persist :wheel",
+            'cat > "$ROOTFS/etc/init.d/chronyd"',
+            'ln -sfn /etc/init.d/chronyd "$ROOTFS/etc/runlevels/default/chronyd"',
+            'cat > "$ROOTFS/etc/chrony.conf"', 'cat > "$ROOTFS/etc/logrotate.conf"',
+            "10-khaymos-bash-completion.sh", '"$SYSROOT/usr/bin/lspci"',
+            '"$SYSROOT/usr/bin/lsusb"', '"$SYSROOT/usr/bin/mmc"',
+            '"$SYSROOT/usr/sbin/efibootmgr"',
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, assembly)
+
 
 if __name__ == "__main__":
     unittest.main()

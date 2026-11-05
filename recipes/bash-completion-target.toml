@@ -1,0 +1,9 @@
+name = "bash-completion-target"
+version = "2.18.0"
+source = "https://github.com/scop/bash-completion/releases/download/2.18.0/bash-completion-2.18.0.tar.xz"
+sha256 = "88bcf85124f77f74f2f2f8bcd16ac4382d807a827ede742a64940c7116aea33f"
+archive_root = "bash-completion-2.18.0"
+build_type = "target"
+depends = ["glibc", "bash-target"]
+build = ["./configure --prefix=/usr --sysconfdir=/etc", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\""]

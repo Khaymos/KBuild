@@ -1,0 +1,9 @@
+name = "less-target"
+version = "710"
+source = "https://www.greenwoodsoftware.com/less/less-710.tar.gz"
+sha256 = "d1008fb78dcae1323ddab664bcb352a61f022b1b131bd8018548e021d975ec7a"
+archive_root = "less-710"
+build_type = "target"
+depends = ["glibc", "ncurses-target"]
+build = ["./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc", "make -j\"$(nproc)\""]
+install = ["make install DESTDIR=\"$DESTDIR\"", "rm -f \"$DESTDIR/usr/share/info/dir\""]

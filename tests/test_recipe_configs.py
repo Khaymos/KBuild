@@ -107,6 +107,45 @@ class RecipeConfigurationTests(unittest.TestCase):
                 self.assertIn(f"--enable {option}", build)
                 self.assertIn(f"CONFIG_${{option}}=y", build)
 
+    def test_base_utility_recipes_are_pinned_and_dependency_aware(self) -> None:
+        expected = {
+            "pciutils-target": ("3.15.0", ("zlib-target",)),
+            "libusb-target": ("1.0.30", ("eudev-target",)),
+            "usbutils-target": ("019", ("libusb-target", "eudev-target")),
+            "iputils-target": ("20250605", ()),
+            "ethtool-target": ("7.2", ()),
+            "less-target": ("710", ("ncurses-target",)),
+            "nano-target": ("9.3", ("ncurses-target",)),
+            "vim-target": ("9.2.0943", ("ncurses-target",)),
+            "bash-completion-target": ("2.18.0", ("bash-target",)),
+            "chrony-target": ("4.9", ("libcap-target",)),
+            "popt-target": ("1.19", ()),
+            "logrotate-target": ("3.22.0", ("popt-target",)),
+            "smartmontools-target": ("7.5", ()),
+            "json-c-target": ("0.18", ()),
+            "nvme-cli-target": ("3.1", ("json-c-target",)),
+            "mmc-utils-target": ("1.0", ()),
+            "efivar-target": ("39", ()),
+            "efibootmgr-target": ("18", ("efivar-target", "popt-target")),
+            "opendoas-target": ("6.8.2", ("libxcrypt-target",)),
+        }
+        for name, (version, dependencies) in expected.items():
+            with self.subTest(package=name):
+                recipe = kbuild.load_recipe(name)
+                self.assertEqual(recipe["version"], version)
+                self.assertEqual(recipe["build_type"], "target")
+                for dependency in dependencies:
+                    self.assertIn(dependency, recipe["depends"])
+
+    def test_base_admin_tools_keep_safe_defaults(self) -> None:
+        doas = kbuild.load_recipe("opendoas-target")
+        self.assertIn("--with-shadow", "\\n".join(doas["build"]))
+        self.assertIn("chmod 4755", "\\n".join(doas["install"]))
+        iputils = kbuild.load_recipe("iputils-target")
+        self.assertIn("-DNO_SETCAP_OR_SUID=true", "\\n".join(iputils["build"]))
+        nvme = kbuild.load_recipe("nvme-cli-target")
+        self.assertIn("-Dtests=false", "\\n".join(nvme["build"]))
+
 
 if __name__ == "__main__":
     unittest.main()

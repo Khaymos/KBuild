@@ -1,0 +1,9 @@
+name = "iputils-target"
+version = "20250605"
+source = "https://github.com/iputils/iputils/releases/download/20250605/iputils-20250605.tar.gz"
+sha256 = "475c643e5f55b302286267b97d3ce0f47ca3489ced8aa0401b1eeb1e68228d6b"
+archive_root = "iputils-20250605"
+build_type = "target"
+depends = ["glibc"]
+build = ["python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini", "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --buildtype=release --wrap-mode=nofallback -DUSE_CAP=false -DUSE_IDN=false -DBUILD_ARPING=true -DBUILD_CLOCKDIFF=false -DBUILD_PING=true -DBUILD_TRACEPATH=true -DBUILD_MANS=false -DNO_SETCAP_OR_SUID=true -DUSE_GETTEXT=false -DSKIP_TESTS=true build", "ninja -C build -j\"$(nproc)\""]
+install = ["meson install -C build --destdir \"$DESTDIR\""]
