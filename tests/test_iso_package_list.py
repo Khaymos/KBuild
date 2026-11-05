@@ -361,7 +361,7 @@ class IsoPackageListTests(unittest.TestCase):
         self.assertIn('"$SYSROOT/usr/sbin/mkfs.fat"', build_rootfs)
         self.assertIn('"$SYSROOT/usr/lib/grub/x86_64-efi/modinfo.sh"', build_rootfs)
         self.assertIn('"$SYSROOT/usr/bin/grub-mkimage"', build_rootfs)
-        self.assertIn('"$SYSROOT/usr/bin/grub-probe"', build_rootfs)
+        self.assertIn('"$SYSROOT/usr/sbin/grub-probe"', build_rootfs)
         self.assertIn('"$SYSROOT/usr/bin/grub-mkrelpath"', build_rootfs)
 
 
