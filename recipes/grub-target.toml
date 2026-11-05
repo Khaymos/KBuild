@@ -20,8 +20,8 @@ for tool in gcc nm objcopy strip; do
         exit 1
     }
 done''',
-'''mkdir -p build-khaymos
-cd build-khaymos
+'''mkdir -p build-khaymos-pc
+cd build-khaymos-pc
 ax_cv_check_ldflags___Wl___image_base_0x400000=no \
 CPP="$CC -E" \
 TARGET_CC="$CC" \
@@ -48,11 +48,49 @@ TARGET_STRIP="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip" \
     --enable-device-mapper=no \
     --enable-libzfs=no \
     --disable-werror \
-    ac_cv_lib_lzma_lzma_code=no''',
-'''make -C build-khaymos'''
+    ac_cv_lib_lzma_lzma_code=no
+make -j"$(nproc)"''',
+'''mkdir -p build-khaymos-efi
+cd build-khaymos-efi
+ax_cv_check_ldflags___Wl___image_base_0x400000=no \
+CPP="$CC -E" \
+TARGET_CC="$CC" \
+CFLAGS="$CFLAGS -Os" \
+TARGET_CFLAGS="$CFLAGS -Os" \
+TARGET_CPPFLAGS="-Os -fno-stack-protector" \
+TARGET_LDFLAGS="$LDFLAGS -Os" \
+TARGET_NM="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-nm" \
+TARGET_OBJCOPY="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-objcopy" \
+TARGET_STRIP="$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-strip" \
+../configure \
+    --build="$(gcc -dumpmachine)" \
+    --host="$KBUILD_TARGET" \
+    --target=x86_64 \
+    --with-platform=efi \
+    --prefix=/usr \
+    --exec-prefix=/usr \
+    --bindir=/usr/bin \
+    --sbindir=/usr/sbin \
+    --libdir=/usr/lib \
+    --sysconfdir=/etc \
+    --disable-grub-mkfont \
+    --enable-efiemu=no \
+    --enable-device-mapper=no \
+    --enable-libzfs=no \
+    --disable-werror \
+    ac_cv_lib_lzma_lzma_code=no
+make -j"$(nproc)"'''
 ]
 
 install = [
-    'make -C build-khaymos DESTDIR="$DESTDIR" install',
-    'rm -f "$DESTDIR/usr/share/info/dir"'
+'''make -C build-khaymos-pc DESTDIR="$DESTDIR" install
+EFI_STAGE="$PWD/build-khaymos-efi-destdir"
+make -C build-khaymos-efi DESTDIR="$EFI_STAGE" install
+test -d "$EFI_STAGE/usr/lib/grub/x86_64-efi"
+install -d "$DESTDIR/usr/lib/grub"
+cp -a "$EFI_STAGE/usr/lib/grub/x86_64-efi" "$DESTDIR/usr/lib/grub/"
+test -s "$DESTDIR/usr/lib/grub/i386-pc/boot.img"
+test -s "$DESTDIR/usr/lib/grub/x86_64-efi/modinfo.sh"
+rm -f "$DESTDIR/usr/share/info/dir"'''
 ]
+
