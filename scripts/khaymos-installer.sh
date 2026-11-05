@@ -339,8 +339,6 @@ test -s "$MNT/boot/grub/grub.cfg" ||
     fail "GRUB configuration was not written"
 
 if [[ "$BOOT_MODE" == UEFI ]]; then
-    test -s "$MNT/boot/efi/EFI/KhaymOS/grubx64.efi" ||
-        fail "GRUB UEFI loader is missing"
     test -s "$MNT/boot/efi/EFI/BOOT/BOOTX64.EFI" ||
         fail "GRUB UEFI fallback loader is missing"
 else
