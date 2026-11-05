@@ -7,7 +7,7 @@ build_type = "target"
 depends = ["glibc"]
 
 build = [
-  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --mandir=/usr/share/man --docdir=/usr/share/doc/dosfstools-4.2 --enable-compat-symlinks --without-udev",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --mandir=/usr/share/man --docdir=/usr/share/doc/dosfstools-4.2 --enable-compat-symlinks",
   "make -j\"$(nproc)\""
 ]
 
