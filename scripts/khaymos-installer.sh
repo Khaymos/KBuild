@@ -306,15 +306,13 @@ if [[ "$BOOT_MODE" == UEFI ]]; then
     chroot "$MNT" /usr/sbin/grub-install \
         --target=x86_64-efi \
         --efi-directory=/boot/efi \
-        --bootloader-id=KhaymOS \
+        --boot-directory=/boot \
+        --removable \
         --no-nvram \
         --recheck
 
-    EFI_LOADER="$MNT/boot/efi/EFI/KhaymOS/grubx64.efi"
-    [[ -s "$EFI_LOADER" ]] || fail "GRUB did not create EFI/KhaymOS/grubx64.efi"
-    install -D -m 0644 "$EFI_LOADER" "$MNT/boot/efi/EFI/BOOT/BOOTX64.EFI"
     test -s "$MNT/boot/efi/EFI/BOOT/BOOTX64.EFI" ||
-        fail "UEFI removable-media fallback loader was not created"
+        fail "GRUB did not create the UEFI removable-media fallback loader"
 else
     echo
     echo "=== Installing GRUB for legacy BIOS ==="
