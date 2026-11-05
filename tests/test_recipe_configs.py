@@ -102,7 +102,7 @@ class RecipeConfigurationTests(unittest.TestCase):
     def test_kernel_recipe_enables_uefi_and_fat_support(self) -> None:
         recipe = kbuild.load_recipe("linux-kernel")
         build = "\\n".join(recipe.get("build", []))
-        for option in ("EFI", "EFI_STUB", "EFI_PARTITION", "FAT_FS", "MSDOS_FS", "VFAT_FS"):
+        for option in ("EFI", "EFI_STUB", "PARTITION_ADVANCED", "EFI_PARTITION", "FAT_FS", "MSDOS_FS", "VFAT_FS"):
             with self.subTest(option=option):
                 self.assertIn(f"--enable {option}", build)
                 self.assertIn(f"CONFIG_${{option}}=y", build)
