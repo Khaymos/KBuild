@@ -12,7 +12,7 @@ depends = ["binutils-cross", "glibc"]
 build = [
   "mkdir -p ../gcc-build",
   "cd ../gcc-build && ../gcc-16.1.0/configure --prefix=\"$KBUILD_TOOLCHAIN\" --infodir=\"$KBUILD_TOOLCHAIN/share/info/gcc\" --target=\"$KBUILD_TARGET\" --with-sysroot=\"$SYSROOT\" --with-build-sysroot=\"$SYSROOT\" --with-as=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-as\" --with-ld=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ld\" --with-native-system-header-dir=/usr/include --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-system-zlib --disable-bootstrap --disable-multilib --disable-nls --disable-libquadmath --disable-libssp --disable-libvtv --disable-libsanitizer --enable-languages=c,c++ --enable-shared --enable-threads=posix",
-  "cd ../gcc-build && make all-gcc all-target-libgcc all-target-libatomic all-target-libgomp all-target-libstdc++-v3"
+  "cd ../gcc-build && make -j"$(nproc)" all-gcc all-target-libgcc all-target-libatomic all-target-libgomp all-target-libstdc++-v3"
 ]
 
 install = [

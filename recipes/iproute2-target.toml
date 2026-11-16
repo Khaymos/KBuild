@@ -7,7 +7,7 @@ build_type = "target"
 depends = ["glibc", "linux-headers", "libcap-target", "zlib-target"]
 
 build = [
-  "make CC=\"$CC\" AR=\"$AR\" HOSTCC=cc KERNEL_INCLUDE=\"$SYSROOT/usr/include\""
+  "make -j"$(nproc)" CC=\"$CC\" AR=\"$AR\" HOSTCC=cc KERNEL_INCLUDE=\"$SYSROOT/usr/include\""
 ]
 
 install = [

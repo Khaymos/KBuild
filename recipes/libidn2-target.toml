@@ -8,7 +8,7 @@ depends = ["glibc", "libunistring-target"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-nls",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

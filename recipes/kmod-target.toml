@@ -8,7 +8,7 @@ depends = ["glibc", "zlib-target", "xz-target"]
 
 build = [
   "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --with-rootlibdir=/usr/lib --with-rootlibexecdir=/usr/lib --with-zlib --with-xz --disable-static --disable-manpages",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

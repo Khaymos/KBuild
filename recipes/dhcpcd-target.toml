@@ -8,7 +8,7 @@ depends = ["glibc", "linux-headers"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc --sbindir=/usr/sbin --libexecdir=/usr/lib/dhcpcd --dbdir=/var/lib/dhcpcd --rundir=/run/dhcpcd --disable-debug --enable-privsep --privsepuser=dhcpcd",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

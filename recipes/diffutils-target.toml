@@ -9,7 +9,7 @@ depends = ["glibc"]
 
 build = [
   "ac_cv_func_strcasecmp=yes gl_cv_func_strcasecmp_works=yes ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-nls",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

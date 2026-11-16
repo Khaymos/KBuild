@@ -8,7 +8,7 @@ depends = []
 
 build = [
   "./configure --prefix=/usr",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

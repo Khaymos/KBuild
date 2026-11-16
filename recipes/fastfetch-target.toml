@@ -9,7 +9,7 @@ patches = ["patches/fastfetch-khaymos-logo.patch"]
 
 build = [
   "cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DENABLE_LUA=OFF -DENABLE_SQLITE3=OFF -DENABLE_VULKAN=OFF",
-  "cmake --build build",
+  "cmake --build build -j\"$(nproc)\"",
 ]
 
 install = [

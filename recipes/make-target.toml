@@ -11,7 +11,7 @@ depends = ["glibc"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-nls --without-guile",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

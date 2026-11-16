@@ -13,7 +13,7 @@ depends = [
 
 build = [
   "CPPFLAGS=\"-I$SYSROOT/usr/include\" LDFLAGS=\"-L$SYSROOT/usr/lib\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-java --disable-csharp --disable-go --disable-modula2 --disable-openmp --disable-curses --with-libunistring-prefix=\"$SYSROOT/usr\"",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

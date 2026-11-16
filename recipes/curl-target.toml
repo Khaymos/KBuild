@@ -8,7 +8,7 @@ depends = ["glibc", "openssl-target", "zlib-target", "ca-certificates-target", "
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --with-openssl=\"$SYSROOT/usr\" --with-zlib=\"$SYSROOT/usr\" --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt --with-ca-path=/etc/ssl/certs --disable-static --disable-ftp --disable-file --disable-ldap --disable-ldaps --disable-rtsp --disable-dict --disable-telnet --disable-tftp --disable-pop3 --disable-imap --disable-smtp --disable-gopher --disable-mqtt --disable-smb --disable-manual --disable-docs",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

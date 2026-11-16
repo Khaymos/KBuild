@@ -10,7 +10,7 @@ depends = ["glibc", "linux-headers", "zlib-target"]
 build = [
   "sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure",
   "CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\" AR=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ar\" RANLIB=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-ranlib\" PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libdir=/usr/lib --sysconfdir=/etc --localstatedir=/var --disable-vlock --disable-nls",
-  "make"
+  "make -j"$(nproc)""
 ]
 
 install = [

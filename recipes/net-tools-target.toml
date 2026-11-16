@@ -93,7 +93,7 @@ makefile.write_text("".join(output))
 print("Disabled legacy AX.25, NET/ROM, and ROSE features.")
 print("Removed their corresponding objects from lib/Makefile.")
 PY""",
-  "make CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\""
+  "make -j\"$(nproc)\" CC=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-gcc\""
 ]
 
 install = [
