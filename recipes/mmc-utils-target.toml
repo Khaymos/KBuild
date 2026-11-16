@@ -5,5 +5,5 @@ sha256 = "9c2a02d5b73813d73ea10f949d4b29702a303f3f52ea354dfc33cf71b1751526"
 archive_root = "mmc-utils-1.0"
 build_type = "target"
 depends = ["glibc"]
-build = ["make -j\"$(nproc)\" CC=\"$CC\" CFLAGS=\"$CFLAGS\""]
+build = ["make -j\"$(nproc)\" C=0 CC=\"$CC\" CFLAGS=\"$CFLAGS\""]
 install = ["make prefix=/usr DESTDIR=\"$DESTDIR\" install"]
