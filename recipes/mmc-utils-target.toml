@@ -1,7 +1,7 @@
 name = "mmc-utils-target"
 version = "1.0"
-source = "https://git.kernel.org/pub/scm/utils/mmc/mmc-utils.git/snapshot/mmc-utils-1.0.tar.gz"
-sha256 = "39e6a89e06b53f99816f110af6743d1adc82220b26c51b0c3fd0a11ccf4206c2"
+source = "https://mirrors.edge.kernel.org/debian/pool/main/m/mmc-utils/mmc-utils_1.0.orig.tar.xz"
+sha256 = "9c2a02d5b73813d73ea10f949d4b29702a303f3f52ea354dfc33cf71b1751526"
 archive_root = "mmc-utils-1.0"
 build_type = "target"
 depends = ["glibc"]
