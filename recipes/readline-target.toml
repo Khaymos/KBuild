@@ -9,7 +9,7 @@ depends = ["glibc", "ncurses-target"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-static --with-curses --enable-multibyte",
-  "make -j"$(nproc)" SHLIB_LIBS=\"-lncursesw\""
+  "make -j\"$(nproc)\" SHLIB_LIBS=\"-lncursesw\""
 ]
 
 install = [

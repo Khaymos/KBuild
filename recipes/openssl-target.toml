@@ -8,7 +8,7 @@ depends = ["glibc", "zlib-target"]
 
 build = [
   "./Configure linux-x86_64 --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared zlib-dynamic no-tests",
-  "make -j"$(nproc)""
+  "make -j\"$(nproc)\""
 ]
 
 install = [

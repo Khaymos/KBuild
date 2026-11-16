@@ -9,7 +9,7 @@ depends = ["glibc"]
 
 build = [
   "BUILD_CC=gcc ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --mandir=/usr/share/man --with-shared --without-normal --without-debug --enable-widec --without-cxx --without-ada --with-build-cc=gcc --with-default-terminfo-dir=/usr/share/terminfo --with-terminfo-dirs=/etc/terminfo:/lib/terminfo:/usr/share/terminfo --enable-pc-files --with-pkg-config-libdir=/usr/lib/pkgconfig --disable-stripping",
-  "make -j"$(nproc)""
+  "make -j\"$(nproc)\""
 ]
 
 install = [

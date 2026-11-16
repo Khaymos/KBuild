@@ -14,7 +14,7 @@ depends = ["linux-headers", "gcc-cross-stage1"]
 build = [
   "mkdir -p ../glibc-build",
   "cd ../glibc-build && BUILD_CC=gcc CONFIG_SITE=/dev/null libc_cv_slibdir=/usr/lib ../glibc-2.44/configure --prefix=/usr --host=\"$KBUILD_TARGET\" --build=\"$(../glibc-2.44/scripts/config.guess)\" --with-headers=\"$SYSROOT/usr/include\" --disable-nscd --disable-werror --enable-kernel=5.10",
-  "cd ../glibc-build && make -j"$(nproc)""
+  "cd ../glibc-build && make -j\"$(nproc)\""
 ]
 
 install = [

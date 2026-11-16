@@ -8,7 +8,7 @@ build_type = "target"
 depends = ["glibc"]
 
 build = [
-  "make -j"$(nproc)" CROSS_COMPILE=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-\" BUILD_CC=gcc GOLANG=no PAM_CAP=no prefix=/usr lib=lib",
+  "make -j\"$(nproc)\" CROSS_COMPILE=\"$KBUILD_TOOLCHAIN/bin/$KBUILD_TARGET-\" BUILD_CC=gcc GOLANG=no PAM_CAP=no prefix=/usr lib=lib",
 ]
 
 install = [

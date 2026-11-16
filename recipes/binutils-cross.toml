@@ -14,7 +14,7 @@ depends = []
 build = [
   "mkdir -p ../binutils-build",
   "cd ../binutils-build && ../binutils-2.47/configure --prefix=\"$KBUILD_TOOLCHAIN\" --target=\"$KBUILD_TARGET\" --with-sysroot=\"$SYSROOT\" --disable-nls --disable-werror --disable-gdb --disable-sim",
-  "cd ../binutils-build && make -j"$(nproc)""
+  "cd ../binutils-build && make -j\"$(nproc)\""
 ]
 
 install = [

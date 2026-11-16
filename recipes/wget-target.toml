@@ -8,7 +8,7 @@ depends = ["glibc", "openssl-target", "zlib-target", "ca-certificates-target"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --with-ssl=openssl --with-libssl-prefix=\"$SYSROOT/usr\" --disable-nls --disable-iri --without-libpsl",
-  "make -j"$(nproc)""
+  "make -j\"$(nproc)\""
 ]
 
 install = [

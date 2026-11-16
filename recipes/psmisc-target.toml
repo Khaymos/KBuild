@@ -9,7 +9,7 @@ depends = ["glibc", "ncurses-target"]
 build = [
   "ac_cv_lib_tinfo_tgetent=yes LIBS=-lncursesw TERMCAP_LIB=-lncursesw PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --disable-nls",
   "sed -i 's/-ltinfo/-lncursesw/g' Makefile",
-  "make -j"$(nproc)" LIBS=-lncursesw"
+  "make -j\"$(nproc)\" LIBS=-lncursesw"
 ]
 
 install = [

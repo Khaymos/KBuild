@@ -8,7 +8,7 @@ depends = ["glibc"]
 
 build = [
   "sed -i 's/-Os/-O2/' Makefile.sharedlibrary",
-  "make -j"$(nproc)" -f Makefile.sharedlibrary"
+  "make -j\"$(nproc)\" -f Makefile.sharedlibrary"
 ]
 
 install = [

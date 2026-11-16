@@ -9,7 +9,7 @@ depends = ["glibc", "readline-target"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-nls --with-installed-readline --without-bash-malloc",
-  "make -j"$(nproc)""
+  "make -j\"$(nproc)\""
 ]
 
 install = [
