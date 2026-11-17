@@ -39,7 +39,6 @@ for path in \
     "$SYSROOT/usr/bin/vi" \
     "$SYSROOT/usr/bin/mmc" \
     "$SYSROOT/usr/bin/chronyc" \
-    "$SYSROOT/usr/bin/doas" \
     "$SYSROOT/usr/share/bash-completion/bash_completion" \
     "$SYSROOT/usr/sbin/ethtool" \
     "$SYSROOT/usr/sbin/chronyd" \
@@ -341,12 +340,6 @@ cat > "$ROOTFS/etc/motd" <<'MOTD'
 Welcome to KhaymOS Linux 0.1.
 MOTD
 
-echo
-echo "=== Configuring Base utilities ==="
-cat > "$ROOTFS/etc/doas.conf" <<'DOAS'
-permit persist :wheel
-DOAS
-chmod 0600 "$ROOTFS/etc/doas.conf"
 
 if [[ ! -e "$ROOTFS/etc/profile" ]]; then
     cat > "$ROOTFS/etc/profile" <<'PROFILE'
