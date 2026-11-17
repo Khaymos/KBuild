@@ -3,6 +3,7 @@ version = "0.1.0"
 source = "https://github.com/Khaymos/knpm/archive/275d9e42bcad6728c70eec31cb8206aac3f240f4.tar.gz"
 sha256 = "a3f7fd456e81fc51a7d1279ec2918d6ec0b26e6ed7ce7a2691b85b87fbe7939b"
 build_type = "host"
+profile = "iso"
 
 build = [
   "cargo build --release --locked --offline",
