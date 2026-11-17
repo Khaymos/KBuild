@@ -11,7 +11,7 @@ TOP = Path(__file__).resolve().parents[1]
 ROOTFS = Path(sys.argv[1]) if len(sys.argv) > 1 else TOP / "rootfs"
 
 ROOTFS = ROOTFS.absolute()
-PROJECT_ROOT = TOP.parent.parent.parent
+PROJECT_ROOT = TOP.parent
 KNPM_CANDIDATES = (
     PROJECT_ROOT / "knpm/gh/knpm/target/release/knpm",
     PROJECT_ROOT / "knpm/target/release/knpm",
