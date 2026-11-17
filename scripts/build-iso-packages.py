@@ -95,7 +95,6 @@ PACKAGES_TO_BUILD = [
     ("mmc-utils-target", "1.0", "glibc"),
     ("efivar-target", "39", "glibc"),
     ("efibootmgr-target", "18", "glibc,efivar-target,popt-target"),
-    ("opendoas-target", "6.8.2", "glibc,libxcrypt-target"),
 ]
 
 
