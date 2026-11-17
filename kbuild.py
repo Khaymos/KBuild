@@ -169,6 +169,11 @@ def _read_recipe(name):
         raise KBuildError(f"{name}: build_type must be 'host' or 'target'")
     data["build_type"] = build_type
 
+    profile = data.get("profile", "base")
+    if not isinstance(profile, str) or not NAME_PATTERN.fullmatch(profile):
+        raise KBuildError(f"{name}: profile must be a valid package-style name")
+    data["profile"] = profile
+
     for field in ("requires_cross_compiler", "allow_bootstrap_compiler"):
         if field in data and not isinstance(data[field], bool):
             raise KBuildError(f"{name}: {field} must be a boolean")
@@ -1071,7 +1076,8 @@ def command_list(_args):
             dependencies = ", ".join(data.get("depends", [])) or "none"
             print(
                 f"{data['name']} {data['version']} "
-                f"[type: {data.get('build_type', 'host')}; dependencies: {dependencies}]"
+                f"[profile: {data.get('profile', 'base')}; "
+                f"type: {data.get('build_type', 'host')}; dependencies: {dependencies}]"
             )
         except KBuildError as exc:
             print(f"{recipe_path.name}: INVALID ({exc})")
@@ -1084,6 +1090,7 @@ def command_info(args):
     print(f"Source:       {data['source']}")
     print(f"SHA-256:      {data['sha256']}")
     print(f"Build type:   {data.get('build_type', 'host')}")
+    print(f"Profile:      {data.get('profile', 'base')}")
     print(f"Dependencies: {', '.join(data.get('depends', [])) or 'none'}")
     print(f"Target:       {TARGET}")
     print(f"Build steps:  {len(data.get('build', []))}")
@@ -1144,15 +1151,74 @@ def all_recipe_order():
         state[name] = 2
         ordered.append(name)
 
-    # Seed the walk with the required bootstrap sequence. Remaining recipes are
-    # topologically ordered afterward so they cannot run ahead of the toolchain.
+    # The default build includes only base-profile recipes as roots. Profile-only
+    # packages can still be pulled in when a base package explicitly depends on them.
+    # Keep the cross-toolchain bootstrap sequence first.
     roots = list(BOOTSTRAP_ORDER)
-    roots.extend(name for name in recipe_names if name not in set(roots))
+    bootstrap_set = set(BOOTSTRAP_ORDER)
+    roots.extend(
+        name for name in recipe_names
+        if name not in bootstrap_set
+        and _read_recipe(name).get("profile", "base") == "base"
+    )
     for name in roots:
         visit(name)
 
     return ordered
 
+
+def profile_recipe_order(profile):
+    """Return the dependency-first recipe order for one opt-in profile."""
+    if not isinstance(profile, str) or not NAME_PATTERN.fullmatch(profile):
+        raise KBuildError(f"Invalid profile name: {profile!r}")
+
+    recipe_names = sorted(
+        path.stem for path in RECIPES.glob("*.toml") if path.is_file()
+    )
+    roots = [
+        name for name in recipe_names
+        if _read_recipe(name).get("profile", "base") == profile
+    ]
+    if not roots:
+        available = sorted({
+            _read_recipe(name).get("profile", "base") for name in recipe_names
+        } - {"base"})
+        raise KBuildError(
+            f"No recipes found for profile {profile!r}. "
+            f"Available optional profiles: {', '.join(available) or 'none'}"
+        )
+
+    recipes = {}
+    state = {}
+    stack = []
+    ordered = []
+
+    def visit(name):
+        status = state.get(name, 0)
+        if status == 2:
+            return
+        if status == 1:
+            cycle_start = stack.index(name)
+            cycle = stack[cycle_start:] + [name]
+            raise KBuildError("Dependency cycle detected: " + " -> ".join(cycle))
+
+        data = recipes.get(name)
+        if data is None:
+            data = _read_recipe(name)
+            recipes[name] = data
+
+        state[name] = 1
+        stack.append(name)
+        for dependency in data.get("depends", []):
+            visit(dependency)
+        stack.pop()
+        state[name] = 2
+        ordered.append(name)
+
+    for name in roots:
+        visit(name)
+
+    return roots, ordered
 
 
 def _format_duration(elapsed_seconds):
@@ -1189,6 +1255,44 @@ def _ask_build_timer():
         if answer in ("n", "no"):
             return False
         print("Please answer 'y' or 'n'.")
+
+
+def command_build_profile(args):
+    roots, order = profile_recipe_order(args.profile)
+    root_set = set(roots)
+
+    if args.dry_run:
+        print(
+            f"Build plan for profile {args.profile}: {len(order)} recipes "
+            f"including dependencies"
+        )
+        for index, name in enumerate(order, start=1):
+            data = _read_recipe(name)
+            dependencies = ", ".join(data.get("depends", [])) or "none"
+            build_type = data.get("build_type", "host")
+            action = "build + deploy to sysroot" if build_type == "target" else "build host package"
+            role = "profile package" if name in root_set else "dependency"
+            print(
+                f"{index:2}/{len(order)}  {name} {data['version']} "
+                f"[{role}; {build_type}; {action}; dependencies: {dependencies}]"
+            )
+        print()
+        print("Dry run complete; no packages were built or deployed.")
+        return
+
+    for index, name in enumerate(order, start=1):
+        data = load_recipe(name)
+        role = "profile" if name in root_set else "dependency"
+        print(f"\n==> [{index}/{len(order)}] Building {name} ({role})")
+        fingerprint = build(
+            name,
+            force=args.force,
+            as_dependency=name not in root_set,
+        )
+        if data.get("build_type", "host") == "target" and not is_deployed(data, fingerprint):
+            deploy(name)
+
+    print(f"\nKBuild profile {args.profile!r} completed: {len(order)} recipes processed.")
 
 
 def command_build(args):
@@ -1300,6 +1404,19 @@ def main():
         help="Preview the staged bootstrap and dependency-first build-all plan",
     )
 
+    profile_parser = subparsers.add_parser(
+        "build-profile", help="Build and deploy all packages in an opt-in profile"
+    )
+    profile_parser.add_argument("profile")
+    profile_parser.add_argument(
+        "--force", action="store_true",
+        help="Rebuild profile packages even if their cache is valid",
+    )
+    profile_parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Preview the profile's dependency-first build plan",
+    )
+
     clean_parser = subparsers.add_parser("clean", help="Remove build output")
     clean_parser.add_argument("name", nargs="?")
     clean_parser.add_argument(
@@ -1323,6 +1440,7 @@ def main():
         "fetch": command_fetch,
         "verify": command_verify,
         "build": command_build,
+        "build-profile": command_build_profile,
         "clean": command_clean,
         "deploy": command_deploy,
         "undeploy": command_undeploy,
