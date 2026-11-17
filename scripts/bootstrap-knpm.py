@@ -11,12 +11,7 @@ TOP = Path(__file__).resolve().parents[1]
 ROOTFS = Path(sys.argv[1]) if len(sys.argv) > 1 else TOP / "rootfs"
 
 ROOTFS = ROOTFS.absolute()
-PROJECT_ROOT = TOP.parent
-KNPM_CANDIDATES = (
-    PROJECT_ROOT / "knpm/gh/knpm/target/release/knpm",
-    PROJECT_ROOT / "knpm/target/release/knpm",
-)
-KNPM_HOST = next((candidate for candidate in KNPM_CANDIDATES if candidate.is_file()), KNPM_CANDIDATES[0])
+KNPM_HOST = TOP / "destdir/knpm-host-0.1.0/usr/bin/knpm"
 KNPM_STAGE = TOP / "destdir/knpm-target-0.1.0/usr/bin/knpm"
 PACKAGES = Path(os.environ.get("KBUILD_PACKAGES_DIR", str(TOP / "packages"))).expanduser().absolute()
 
@@ -127,7 +122,7 @@ def main():
         return fail(f"rootfs is missing or is not a real directory: {ROOTFS}")
 
     if not KNPM_HOST.is_file() or not os.access(KNPM_HOST, os.X_OK):
-        return fail(f"host KNPM executable is missing: {KNPM_HOST}")
+        return fail(f"host KNPM executable is missing: {KNPM_HOST}; run 'python3 kbuild.py build knpm-host' first")
 
     for name, version, filename in BOOTSTRAP_PACKAGES:
         archive = PACKAGES / filename
