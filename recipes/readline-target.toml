@@ -6,6 +6,7 @@ archive_root = "readline-8.3"
 
 build_type = "target"
 depends = ["glibc", "ncurses-target"]
+patches = ["patches/readline-8.3-iwd-crash.patch"]
 
 build = [
   "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --disable-static --with-curses --enable-multibyte",
