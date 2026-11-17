@@ -82,7 +82,6 @@ BOOTSTRAP_PACKAGES = [
     ("mmc-utils-target", "1.0", "mmc-utils-target-1.0.khmpkg"),
     ("efivar-target", "39", "efivar-target-39.khmpkg"),
     ("efibootmgr-target", "18", "efibootmgr-target-18.khmpkg"),
-    ("opendoas-target", "6.8.2", "opendoas-target-6.8.2.khmpkg"),
 ]
 
 
