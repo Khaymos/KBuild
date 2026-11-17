@@ -6,4 +6,4 @@ archive_root = "OpenDoas-6.8.2"
 build_type = "target"
 depends = ["glibc", "libxcrypt-target"]
 build = ["./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --target=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --sysconfdir=/etc --with-shadow", "make -j\"$(nproc)\" CC=\"$CC\" YACC=\"bison -y\""]
-install = ["make DESTDIR=\"$DESTDIR\" install", "chmod 4755 \"$DESTDIR/usr/bin/doas\""]
+install = ["make DESTDIR=\"$DESTDIR\" BINOWN=\"$(id -un)\" BINGRP=\"$(id -gn)\" install", "chmod 4755 \"$DESTDIR/usr/bin/doas\""]
