@@ -1,0 +1,18 @@
+name = "fontconfig-target"
+version = "2.18.3"
+source = "https://fontconfig.org/release/fontconfig-2.18.3.tar.xz"
+sha256 = "4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3"
+archive_root = "fontconfig-2.18.3"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "freetype-target", "expat-target", "zlib-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback -Ddoc=disabled -Dtests=disabled -Dtests-external-fonts=disabled -Dtools=enabled -Dnls=disabled -Dxml-backend=expat -Dcache-build=disabled -Dfontations=disabled build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
