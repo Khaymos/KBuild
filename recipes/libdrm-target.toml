@@ -1,0 +1,18 @@
+name = "libdrm-target"
+version = "2.4.134"
+source = "https://dri.freedesktop.org/libdrm/libdrm-2.4.134.tar.xz"
+sha256 = "ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95"
+archive_root = "libdrm-2.4.134"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libpciaccess-target", "zlib-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback -Dlibkms=false -Dman-pages=disabled -Dtests=false build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
