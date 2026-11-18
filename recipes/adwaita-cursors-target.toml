@@ -7,14 +7,42 @@ build_type = "target"
 profile = "xorg"
 depends = ["glibc", "libxcursor-target"]
 
-# Cursor assets are pre-generated upstream. Install them directly without
-# pulling the complete Adwaita icon set or requiring gtk-update-icon-cache.
+# Cursor assets are pre-generated upstream. Install only the cursor theme and
+# its metadata, without the full icon set or GTK icon-cache build dependency.
 build = []
 
 install = [
-  "install -d \"$DESTDIR/usr/share/icons/Adwaita\" \"$DESTDIR/usr/share/licenses/adwaita-cursors\"",
-  "cp -a Adwaita/cursors \"$DESTDIR/usr/share/icons/Adwaita/\"",
+  "install -d \"$DESTDIR/usr/share/icons/Adwaita/cursors\" \"$DESTDIR/usr/share/licenses/adwaita-cursors\"",
+  "cp -a Adwaita/cursors/. \"$DESTDIR/usr/share/icons/Adwaita/cursors/\"",
   "install -m644 index.theme \"$DESTDIR/usr/share/icons/Adwaita/index.theme\"",
   "install -m644 COPYING COPYING_CCBYSA3 COPYING_LGPL \"$DESTDIR/usr/share/licenses/adwaita-cursors/\"",
+  "ln -sfn all-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/fleur\"",
+  "ln -sfn crosshair \"$DESTDIR/usr/share/icons/Adwaita/cursors/cross\"",
+  "ln -sfn crosshair \"$DESTDIR/usr/share/icons/Adwaita/cursors/cross_reverse\"",
+  "ln -sfn crosshair \"$DESTDIR/usr/share/icons/Adwaita/cursors/diamond_cross\"",
+  "ln -sfn crosshair \"$DESTDIR/usr/share/icons/Adwaita/cursors/tcross\"",
+  "ln -sfn context-menu \"$DESTDIR/usr/share/icons/Adwaita/cursors/dnd-ask\"",
+  "ln -sfn default \"$DESTDIR/usr/share/icons/Adwaita/cursors/arrow\"",
+  "ln -sfn default \"$DESTDIR/usr/share/icons/Adwaita/cursors/dnd-move\"",
+  "ln -sfn default \"$DESTDIR/usr/share/icons/Adwaita/cursors/left_ptr\"",
+  "ln -sfn default \"$DESTDIR/usr/share/icons/Adwaita/cursors/top_left_arrow\"",
+  "ln -sfn default \"$DESTDIR/usr/share/icons/Adwaita/cursors/move\"",
+  "ln -sfn e-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/right_side\"",
+  "ln -sfn ew-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/sb_h_double_arrow\"",
+  "ln -sfn grab \"$DESTDIR/usr/share/icons/Adwaita/cursors/hand1\"",
+  "ln -sfn help \"$DESTDIR/usr/share/icons/Adwaita/cursors/question_arrow\"",
+  "ln -sfn n-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/top_side\"",
+  "ln -sfn ne-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/top_right_corner\"",
+  "ln -sfn nesw-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/fd_double_arrow\"",
+  "ln -sfn ns-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/sb_v_double_arrow\"",
+  "ln -sfn nw-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/top_left_corner\"",
+  "ln -sfn nwse-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/bd_double_arrow\"",
+  "ln -sfn pointer \"$DESTDIR/usr/share/icons/Adwaita/cursors/hand2\"",
+  "ln -sfn s-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/bottom_side\"",
+  "ln -sfn se-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/bottom_right_corner\"",
+  "ln -sfn sw-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/bottom_left_corner\"",
+  "ln -sfn text \"$DESTDIR/usr/share/icons/Adwaita/cursors/xterm\"",
+  "ln -sfn w-resize \"$DESTDIR/usr/share/icons/Adwaita/cursors/left_side\"",
+  "ln -sfn wait \"$DESTDIR/usr/share/icons/Adwaita/cursors/watch\"",
   "ln -sfn Adwaita \"$DESTDIR/usr/share/icons/default\""
 ]
