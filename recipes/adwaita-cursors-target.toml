@@ -1,0 +1,20 @@
+name = "adwaita-cursors-target"
+version = "51.0"
+source = "https://download.gnome.org/sources/adwaita-icon-theme/51/adwaita-icon-theme-51.0.tar.xz"
+sha256 = "ba561cf3c96305a47179fa5605856ad695c9238ea07f7093aebd9ba80c4e323b"
+archive_root = "adwaita-icon-theme-51.0"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libxcursor-target"]
+
+# Cursor assets are pre-generated upstream. Install them directly without
+# pulling the complete Adwaita icon set or requiring gtk-update-icon-cache.
+build = []
+
+install = [
+  "install -d \"$DESTDIR/usr/share/icons/Adwaita\" \"$DESTDIR/usr/share/icons/default\" \"$DESTDIR/usr/share/licenses/adwaita-cursors\"",
+  "cp -a Adwaita/cursors \"$DESTDIR/usr/share/icons/Adwaita/\"",
+  "install -m644 index.theme \"$DESTDIR/usr/share/icons/Adwaita/index.theme\"",
+  "install -m644 COPYING COPYING_CCBYSA3 COPYING_LGPL \"$DESTDIR/usr/share/licenses/adwaita-cursors/\"",
+  "ln -sfn ../Adwaita/index.theme \"$DESTDIR/usr/share/icons/default/index.theme\""
+]
