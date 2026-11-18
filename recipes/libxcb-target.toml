@@ -8,7 +8,7 @@ profile = "xorg"
 depends = ["glibc", "libxau-target", "libxdmcp-target", "xcb-proto-target", "util-macros-target"]
 
 build = [
-  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-devel-docs",
+  "PYTHONPATH=\"$SYSROOT/usr/lib/python$(python3 -c 'import sys; print(\"%d.%d\" % sys.version_info[:2])')/site-packages\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --disable-devel-docs",
   "make -j\"$(nproc)\""
 ]
 
