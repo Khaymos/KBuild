@@ -1,0 +1,18 @@
+name = "pango-target"
+version = "1.58.2"
+source = "https://download.gnome.org/sources/pango/1.58/pango-1.58.2.tar.xz"
+sha256 = "342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a"
+archive_root = "pango-1.58.2"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "glib-target", "fribidi-target", "harfbuzz-target", "fontconfig-target", "freetype-target", "libxft-target", "libxrender-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback -Ddocumentation=false -Dman-pages=false -Dbuild-testsuite=false -Dbuild-examples=false -Dintrospection=disabled -Dfontconfig=enabled -Dfreetype=enabled -Dxft=enabled -Dcairo=disabled -Dlibthai=disabled -Dsysprof=disabled build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
