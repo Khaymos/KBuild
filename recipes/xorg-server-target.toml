@@ -1,0 +1,36 @@
+name = "xorg-server-target"
+version = "21.1.26"
+source = "https://xorg.freedesktop.org/archive/individual/xserver/xorg-server-21.1.26.tar.xz"
+sha256 = "c8609f9cdafde14de7ec7cb406dac9507add1d536df8d3c3e3d3d9c1cd864066"
+archive_root = "xorg-server-21.1.26"
+build_type = "target"
+profile = "xorg"
+depends = [
+  "glibc",
+  "xorgproto-target",
+  "xtrans-target",
+  "pixman-target",
+  "libxcvt-target",
+  "font-util-target",
+  "libxau-target",
+  "libxdmcp-target",
+  "libxkbfile-target",
+  "libxfont2-target",
+  "libdrm-target",
+  "libpciaccess-target",
+  "dbus-target",
+  "elogind-target",
+  "eudev-target",
+  "xkeyboard-config-target",
+  "xkbcomp-target"
+]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=libexec --datadir=share --sysconfdir=/etc --localstatedir=/var --buildtype=release --wrap-mode=nofallback -Dxorg=true -Dxwayland=false -Dxephyr=false -Dxnest=false -Dxvfb=false -Dglamor=false -Dsystemd_logind=true -Dudev=true -Dudev_kms=true -Dhal=false -Dpciaccess=true -Ddrm=true -Ddri1=false -Ddri2=true -Ddri3=false -Dint10=false -Dvgahw=false -Ddocs=false -Ddevel-docs=false -Ddocs-pdf=false -Dxkb_dir=/usr/share/X11/xkb -Dxkb_output_dir=/var/lib/xkb build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
