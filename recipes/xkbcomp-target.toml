@@ -1,0 +1,18 @@
+name = "xkbcomp-target"
+version = "1.5.0"
+source = "https://xorg.freedesktop.org/archive/individual/app/xkbcomp-1.5.0.tar.xz"
+sha256 = "2ac31f26600776db6d9cd79b3fcd272263faebac7eb85fb2f33c7141b8486060"
+archive_root = "xkbcomp-1.5.0"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libxkbfile-target", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libxkbcomp.la\""
+]
