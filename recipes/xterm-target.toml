@@ -30,5 +30,5 @@ build = [
 install = [
   "make install DESTDIR=\"$DESTDIR\"",
   "install -d \"$DESTDIR/usr/share/X11/app-defaults\"",
-  "printf '%s\\n' 'XTerm*faceName: DejaVu Sans Mono' 'XTerm*faceSize: 10' >> \"$DESTDIR/usr/share/X11/app-defaults/XTerm\""
+  "printf '%s\\n' 'XTerm*faceName: DejaVu Sans Mono' 'XTerm*faceSize: 10' 'XTerm*renderFont: true' >> \"$DESTDIR/usr/share/X11/app-defaults/XTerm\""
 ]
