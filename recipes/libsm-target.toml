@@ -1,0 +1,18 @@
+name = "libsm-target"
+version = "1.2.6"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libSM-1.2.6.tar.xz"
+sha256 = "be7c0abdb15cbfd29ac62573c1c82e877f9d4047ad15321e7ea97d1e43d835be"
+archive_root = "libSM-1.2.6"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libice-target", "xorgproto-target", "xtrans-target", "util-macros-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libSM.la\""
+]
