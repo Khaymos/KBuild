@@ -1,0 +1,17 @@
+name = "libxdmcp-target"
+version = "1.1.5"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXdmcp-1.1.5.tar.xz"
+sha256 = "d8a5222828c3adab70adf69a5583f1d32eb5ece04304f7f8392b6a353aa2228c"
+archive_root = "libXdmcp-1.1.5"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
