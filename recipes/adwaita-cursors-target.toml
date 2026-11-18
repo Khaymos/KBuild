@@ -12,9 +12,9 @@ depends = ["glibc", "libxcursor-target"]
 build = []
 
 install = [
-  "install -d \"$DESTDIR/usr/share/icons/Adwaita\" \"$DESTDIR/usr/share/icons/default\" \"$DESTDIR/usr/share/licenses/adwaita-cursors\"",
+  "install -d \"$DESTDIR/usr/share/icons/Adwaita\" \"$DESTDIR/usr/share/licenses/adwaita-cursors\"",
   "cp -a Adwaita/cursors \"$DESTDIR/usr/share/icons/Adwaita/\"",
   "install -m644 index.theme \"$DESTDIR/usr/share/icons/Adwaita/index.theme\"",
   "install -m644 COPYING COPYING_CCBYSA3 COPYING_LGPL \"$DESTDIR/usr/share/licenses/adwaita-cursors/\"",
-  "ln -sfn ../Adwaita/index.theme \"$DESTDIR/usr/share/icons/default/index.theme\""
+  "ln -sfn Adwaita \"$DESTDIR/usr/share/icons/default\""
 ]
