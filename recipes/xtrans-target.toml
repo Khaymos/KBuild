@@ -1,0 +1,17 @@
+name = "xtrans-target"
+version = "1.6.0"
+source = "https://xorg.freedesktop.org/archive/individual/lib/xtrans-1.6.0.tar.xz"
+sha256 = "faafea166bf2451a173d9d593352940ec6404145c5d1da5c213423ce4d359e92"
+archive_root = "xtrans-1.6.0"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
