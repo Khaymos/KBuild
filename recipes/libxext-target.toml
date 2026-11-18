@@ -1,0 +1,17 @@
+name = "libxext-target"
+version = "1.3.7"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXext-1.3.7.tar.xz"
+sha256 = "6c643c7035cdacf67afd68f25d01b90ef889d546c9fcd7c0adf7c2cf91e3a32d"
+archive_root = "libXext-1.3.7"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
