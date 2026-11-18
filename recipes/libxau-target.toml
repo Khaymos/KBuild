@@ -1,0 +1,17 @@
+name = "libxau-target"
+version = "1.0.12"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXau-1.0.12.tar.xz"
+sha256 = "74d0e4dfa3d39ad8939e99bda37f5967aba528211076828464d2777d477fc0fb"
+archive_root = "libXau-1.0.12"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
