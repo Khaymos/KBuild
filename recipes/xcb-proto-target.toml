@@ -1,0 +1,17 @@
+name = "xcb-proto-target"
+version = "1.17.0"
+source = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.17.0.tar.xz"
+sha256 = "2c1bacd2110f4799f74de6ebb714b94cf6f80fb112316b1219480fd22562148c"
+archive_root = "xcb-proto-1.17.0"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc"]
+
+build = [
+  "PYTHON=python3 ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
