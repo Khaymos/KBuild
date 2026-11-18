@@ -894,9 +894,16 @@ def deploy(name):
 
 
 def undeploy(name):
-    """Remove only files recorded as owned by this package."""
-    data = load_recipe(name)
-    owner_id = package_id(data)
+    """Remove a deployed recipe or an exact historical package ID from sysroot."""
+    recipe_path = RECIPES / f"{name}.toml"
+    if recipe_path.is_file():
+        data = load_recipe(name)
+        owner_id = package_id(data)
+    else:
+        # Permit removing a previous package version after its recipe has
+        # advanced, without editing the ownership database by hand.
+        owner_id = package_name(name)
+
     database = _read_ownership(SYSROOT_OWNERSHIP, TARGET)
     entries = database["packages"].get(owner_id)
     if entries is None:
@@ -1426,7 +1433,7 @@ def main():
 
     deploy_parser = subparsers.add_parser("deploy", help="Deploy a target package into sysroot")
     deploy_parser.add_argument("name")
-    undeploy_parser = subparsers.add_parser("undeploy", help="Remove a package from sysroot")
+    undeploy_parser = subparsers.add_parser("undeploy", help="Remove a recipe deployment or exact historical package ID from sysroot")
     undeploy_parser.add_argument("name")
     promote_parser = subparsers.add_parser("promote", help="Promote host-built cross-tools into toolchain")
     promote_parser.add_argument("name")
