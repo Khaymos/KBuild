@@ -18,6 +18,7 @@ depends = [
   "libxft-target",
   "freetype-target",
   "fontconfig-target",
+  "dejavu-fonts-target",
   "ncurses-target"
 ]
 
