@@ -1,0 +1,31 @@
+name = "openbox-target"
+version = "3.6.1"
+source = "https://openbox.org/dist/openbox/openbox-3.6.1.tar.gz"
+sha256 = "8b4ac0760018c77c0044fab06a4f0c510ba87eae934d9983b10878483bde7ef7"
+archive_root = "openbox-3.6.1"
+build_type = "target"
+profile = "xorg"
+patches = ["patches/openbox-3.6.1-py3-1.patch"]
+depends = [
+  "glibc",
+  "glib-target",
+  "libxml2-target",
+  "pango-target",
+  "libx11-target",
+  "libxext-target",
+  "libxrandr-target",
+  "libxinerama-target",
+  "libxcursor-target",
+  "libsm-target"
+]
+
+build = [
+  "autoreconf -fi",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --disable-static --disable-startup-notification --disable-imlib2 --disable-librsvg",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libobrender.la\" \"$DESTDIR/usr/lib/libobt.la\""
+]
