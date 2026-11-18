@@ -29,5 +29,5 @@ install = [
   "make install DESTDIR=\"$DESTDIR\"",
   "rm -f \"$DESTDIR/usr/lib/libobrender.la\" \"$DESTDIR/usr/lib/libobt.la\"",
   "install -d \"$DESTDIR/etc/skel\"",
-  "printf '%s\\\\n' 'xterm &' 'exec openbox' > \"$DESTDIR/etc/skel/.xinitrc\""
+  "printf '%s\\n' 'xterm &' 'exec openbox' > \"$DESTDIR/etc/skel/.xinitrc\""
 ]
