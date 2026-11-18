@@ -1,17 +1,33 @@
 name = "xterm-target"
 version = "412"
-source = "https://invisible-island.net/archives/xterm/current/xterm-412.tgz"
+source = "https://invisible-island.net/archives/xterm/xterm-412.tgz"
 sha256 = "b48bc780c1cbc14f6d89269f7e593712af6095876960d650be28b55e5dad65a6"
 archive_root = "xterm-412"
 build_type = "target"
 profile = "xorg"
-depends = ["glibc", "libxaw-target", "libxt-target", "libxmu-target", "libxpm-target", "libxext-target", "libx11-target", "ncurses-target"]
+depends = [
+  "glibc",
+  "libxaw-target",
+  "libxt-target",
+  "libxmu-target",
+  "libxpm-target",
+  "libxext-target",
+  "libx11-target",
+  "libsm-target",
+  "libice-target",
+  "libxft-target",
+  "freetype-target",
+  "fontconfig-target",
+  "ncurses-target"
+]
 
 build = [
-  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --mandir=/usr/share/man --with-app-defaults=/usr/share/X11/app-defaults",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --bindir=/usr/bin --mandir=/usr/share/man --with-app-defaults=/usr/share/X11/app-defaults --disable-imake --enable-wide-chars --enable-256-color --enable-i18n --enable-doublechars --enable-freetype --with-freetype-config=pkg-config",
   "make -j\"$(nproc)\""
 ]
 
 install = [
-  "make install DESTDIR=\"$DESTDIR\""
+  "make install DESTDIR=\"$DESTDIR\"",
+  "install -d \"$DESTDIR/usr/share/X11/app-defaults\"",
+  "printf '%s\\n' 'XTerm*faceName: DejaVu Sans Mono' 'XTerm*faceSize: 10' >> \"$DESTDIR/usr/share/X11/app-defaults/XTerm\""
 ]
