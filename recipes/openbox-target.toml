@@ -16,7 +16,8 @@ depends = [
   "libxrandr-target",
   "libxinerama-target",
   "libxcursor-target",
-  "libsm-target"
+  "libsm-target",
+  "dejavu-fonts-target"
 ]
 
 build = [
