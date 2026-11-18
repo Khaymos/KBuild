@@ -1,0 +1,18 @@
+name = "libfontenc-target"
+version = "1.1.10"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libfontenc-1.1.10.tar.xz"
+sha256 = "daa186a49e3cc2b6fc585ca09971351e6f010f618abc6a164eda82e42e4aa4d6"
+archive_root = "libfontenc-1.1.10"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
