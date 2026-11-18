@@ -9,7 +9,7 @@ depends = ["glibc", "libpciaccess-target", "zlib-target", "eudev-target"]
 
 build = [
   "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
-  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback -Dlibkms=false -Dman-pages=disabled -Dtests=false -Dudev=true build",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback -Dman-pages=disabled -Dtests=false -Dudev=true build",
   "ninja -C build -j\"$(nproc)\""
 ]
 
