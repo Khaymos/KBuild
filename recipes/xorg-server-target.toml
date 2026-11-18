@@ -32,5 +32,6 @@ build = [
 ]
 
 install = [
-  "meson install -C build --destdir \"$DESTDIR\""
+  "meson install -C build --destdir \"$DESTDIR\"",
+  "install -d -m 1777 \"$DESTDIR/var/lib/xkb\""
 ]
