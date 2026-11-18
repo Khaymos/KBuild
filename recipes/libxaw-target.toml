@@ -1,0 +1,18 @@
+name = "libxaw-target"
+version = "1.0.16"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXaw-1.0.16.tar.xz"
+sha256 = "731d572b54c708f81e197a6afa8016918e2e06dfd3025e066ca642a5b8c39c8f"
+archive_root = "libXaw-1.0.16"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libxt-target", "libxmu-target", "libxpm-target", "libxext-target", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libXaw7.la\""
+]
