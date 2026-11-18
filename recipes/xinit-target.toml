@@ -1,0 +1,18 @@
+name = "xinit-target"
+version = "1.4.4"
+source = "https://xorg.freedesktop.org/archive/individual/app/xinit-1.4.4.tar.xz"
+sha256 = "40a47c7a164c7f981ce3787b4b37f7e411fb43231dcde543d70094075dacfef9"
+archive_root = "xinit-1.4.4"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "xorg-server-target", "xauth-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --with-xinitdir=/etc/X11/xinit",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libxinit.la\""
+]
