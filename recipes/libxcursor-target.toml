@@ -1,0 +1,17 @@
+name = "libxcursor-target"
+version = "1.2.3"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXcursor-1.2.3.tar.xz"
+sha256 = "fde9402dd4cfe79da71e2d96bb980afc5e6ff4f8a7d74c159e1966afb2b2c2c0"
+archive_root = "libXcursor-1.2.3"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libxfixes-target", "libxrender-target", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
