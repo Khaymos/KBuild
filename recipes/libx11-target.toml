@@ -13,5 +13,6 @@ build = [
 ]
 
 install = [
-  "make install DESTDIR=\"$DESTDIR\""
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libX11.la\""
 ]
