@@ -1,0 +1,18 @@
+name = "pixman-target"
+version = "0.46.4"
+source = "https://cairographics.org/releases/pixman-0.46.4.tar.xz"
+sha256 = "a098c33924754ad43f981b740f6d576c70f9ed1006e12221b1845431ebce1239"
+archive_root = "pixman-0.46.4"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
