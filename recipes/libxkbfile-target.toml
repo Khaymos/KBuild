@@ -1,0 +1,18 @@
+name = "libxkbfile-target"
+version = "1.2.0"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libxkbfile-1.2.0.tar.xz"
+sha256 = "7f71884e5faf56fb0e823f3848599cf9b5a9afce51c90982baeb64f635233ebf"
+archive_root = "libxkbfile-1.2.0"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback build",
+  "ninja -C build -j\"$(nproc)\""
+]
+
+install = [
+  "meson install -C build --destdir \"$DESTDIR\""
+]
