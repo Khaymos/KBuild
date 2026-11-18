@@ -1,0 +1,18 @@
+name = "libice-target"
+version = "1.1.2"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libICE-1.1.2.tar.xz"
+sha256 = "974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625"
+archive_root = "libICE-1.1.2"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "xorgproto-target", "xtrans-target", "util-macros-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libICE.la\""
+]
