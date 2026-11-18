@@ -27,7 +27,7 @@ depends = [
 
 build = [
   "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
-  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=libexec --datadir=share --sysconfdir=/etc --localstatedir=/var --buildtype=release --wrap-mode=nofallback -Dxorg=true -Dxwayland=false -Dxephyr=false -Dxnest=false -Dxvfb=false -Dglamor=false -Dsystemd_logind=true -Dudev=true -Dudev_kms=true -Dhal=false -Dpciaccess=true -Ddrm=true -Ddri1=false -Ddri2=true -Ddri3=false -Dint10=false -Dvgahw=false -Ddocs=false -Ddevel-docs=false -Ddocs-pdf=false -Dxkb_dir=/usr/share/X11/xkb -Dxkb_output_dir=/var/lib/xkb build",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" meson setup --cross-file khaymos-cross.ini --prefix=/usr --bindir=bin --sbindir=sbin --libdir=lib --libexecdir=libexec --datadir=share --sysconfdir=/etc --localstatedir=/var --buildtype=release --wrap-mode=nofallback -Dxorg=true -Dxephyr=false -Dxnest=false -Dxvfb=false -Dglamor=false -Dsystemd_logind=true -Dudev=true -Dudev_kms=true -Dhal=false -Dpciaccess=true -Ddrm=true -Ddri1=false -Ddri2=true -Ddri3=false -Dint10=false -Dvgahw=false -Ddocs=false -Ddevel-docs=false -Ddocs-pdf=false -Dxkb_dir=/usr/share/X11/xkb -Dxkb_output_dir=/var/lib/xkb build",
   "ninja -C build -j\"$(nproc)\""
 ]
 
