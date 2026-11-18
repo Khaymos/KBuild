@@ -5,7 +5,7 @@ sha256 = "3c55aa86c82e54a4e3109786f0463530d53b36b6d1cfd14616454f985dd2aa43"
 archive_root = "libpciaccess-0.19"
 build_type = "target"
 profile = "xorg"
-depends = ["glibc", "zlib-target"]
+depends = ["glibc", "zlib-target", "util-macros-target"]
 
 build = [
   "python3 \"$KBUILD_ROOT/scripts/write-meson-cross-file.py\" khaymos-cross.ini",
