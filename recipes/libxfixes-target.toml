@@ -1,0 +1,17 @@
+name = "libxfixes-target"
+version = "6.0.2"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXfixes-6.0.2.tar.xz"
+sha256 = "39f115d72d9c5f8111e4684164d3d68cc1fd21f9b27ff2401b08fddfc0f409ba"
+archive_root = "libXfixes-6.0.2"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
