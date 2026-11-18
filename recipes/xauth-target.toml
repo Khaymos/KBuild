@@ -5,7 +5,7 @@ sha256 = "a4000e2f441facebf569026bedecc23ba262cc6927be52070abe0002625cfbe0"
 archive_root = "xauth-1.1.5"
 build_type = "target"
 profile = "xorg"
-depends = ["glibc", "libx11-target", "libxau-target", "xorgproto-target", "util-macros-target"]
+depends = ["glibc", "libx11-target", "libxau-target", "libxext-target", "libxmu-target", "xorgproto-target", "util-macros-target"]
 
 build = [
   "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib",
