@@ -1,0 +1,18 @@
+name = "freetype-target"
+version = "2.14.3"
+source = "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz"
+sha256 = "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f"
+archive_root = "freetype-2.14.3"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "zlib-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static --with-zlib=yes --with-bzip2=no --with-png=no --with-harfbuzz=no --with-brotli=no",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libfreetype.la\""
+]
