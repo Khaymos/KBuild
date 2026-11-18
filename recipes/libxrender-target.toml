@@ -1,0 +1,17 @@
+name = "libxrender-target"
+version = "0.9.13"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXrender-0.9.13.tar.xz"
+sha256 = "3fe88c609df6782e1e7af2e4de36b2563d70cd70ff7dcb1cda561ad64912bb64"
+archive_root = "libXrender-0.9.13"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libx11-target", "xorgproto-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
