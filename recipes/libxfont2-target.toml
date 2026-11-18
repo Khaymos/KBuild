@@ -1,0 +1,18 @@
+name = "libxfont2-target"
+version = "2.0.10"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libXfont2-2.0.10.tar.xz"
+sha256 = "cef1f4ad9cd69f439bb1ac484bdc8f9d7f8e70215b92d8ca86b96e31513e5f9c"
+archive_root = "libXfont2-2.0.10"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "freetype-target", "libfontenc-target", "xorgproto-target", "xtrans-target", "zlib-target", "util-macros-target"]
+
+build = [
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\"",
+  "rm -f \"$DESTDIR/usr/lib/libXfont2.la\""
+]
