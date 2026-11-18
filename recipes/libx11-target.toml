@@ -1,0 +1,17 @@
+name = "libx11-target"
+version = "1.8.14"
+source = "https://xorg.freedesktop.org/archive/individual/lib/libX11-1.8.14.tar.xz"
+sha256 = "bbc78c46217174655c2b32b138ad119f3ac15f50808b4d0b3a2677a4b1afc950"
+archive_root = "libX11-1.8.14"
+build_type = "target"
+profile = "xorg"
+depends = ["glibc", "libxcb-target", "libxau-target", "libxdmcp-target", "xorgproto-target", "xtrans-target", "util-macros-target"]
+
+build = [
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
