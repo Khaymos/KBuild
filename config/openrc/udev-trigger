@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+# Replay device events after udevd is ready.
+
+description="eudev device coldplug"
+
+depend() {
+    need udev
+    before checkfs
+    provides dev
+    keyword -shutdown
+}
+
+start() {
+    ebegin "Coldplugging devices"
+    /usr/bin/udevadm trigger --action=add --type=subsystems &&
+        /usr/bin/udevadm trigger --action=add --type=devices &&
+        /usr/bin/udevadm trigger --action=change --type=devices &&
+        /usr/bin/udevadm settle --timeout=30
+    eend $?
+}
