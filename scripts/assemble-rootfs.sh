@@ -320,8 +320,9 @@ account  required    pam_unix.so
 # Use the standard local password-change module.
 password required    pam_unix.so
 
-# Maintain PAM session state.
+# Maintain PAM session state and register the login with elogind.
 session  required    pam_unix.so
+session  optional    pam_elogind.so
 PAM
 
 chmod 0644 "$ROOTFS/etc/pam.d/system-auth"
