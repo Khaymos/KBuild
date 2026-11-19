@@ -264,6 +264,8 @@ class Repository:
             directory.mkdir(parents=True, exist_ok=True)
             if directory.is_symlink() or not directory.is_dir():
                 raise RepoError(f"unsafe repository directory: {directory}")
+        for directory in (self.state, self.incoming, self.trash, self.backups):
+            os.chmod(directory, 0o700)
         if self.packages.parent != self.arch_root:
             raise RepoError("invalid package directory layout")
 
@@ -286,22 +288,23 @@ class Repository:
         return len(records)
 
     def status(self) -> int:
-        self.prepare()
-        records = collect_records(self.packages)
-        expected = render_index(records)
-        current = self.index.read_bytes() if self.index.is_file() and not self.index.is_symlink() else None
-        package_bytes = sum((self.packages / record["filename"]).stat().st_size for record in records)
+        with self.locked():
+            records = collect_records(self.packages)
+            expected = render_index(records)
+            current = self.index.read_bytes() if self.index.is_file() and not self.index.is_symlink() else None
+            package_bytes = sum((self.packages / record["filename"]).stat().st_size for record in records)
+            mirrorlist_present = self.mirrorlist.is_file() and not self.mirrorlist.is_symlink()
         state = "current" if current == expected else "STALE or missing"
         print(f"Repository: {self.root}")
         print(f"Packages:   {len(records)}")
         print(f"Archive data: {package_bytes} bytes")
         print(f"Index:      {state}")
-        print(f"Mirrorlist: {'present' if self.mirrorlist.is_file() else 'missing'}")
+        print(f"Mirrorlist: {'present' if mirrorlist_present else 'missing'}")
         return 0 if current == expected else 1
 
     def list_packages(self) -> int:
-        self.prepare()
-        records = collect_records(self.packages)
+        with self.locked():
+            records = collect_records(self.packages)
         if not records:
             print("Repository is empty.")
             return 0
@@ -311,6 +314,21 @@ class Repository:
                 f"{record['name']}\t{record['version']}\t{record['arch']}\t"
                 f"{record['filename']}\t{record['sha256']}"
             )
+        return 0
+
+    def list_recoverable(self) -> int:
+        self.prepare()
+        entries = []
+        for label, directory in (("trash", self.trash), ("backup", self.backups)):
+            for path in sorted(directory.iterdir(), key=lambda item: item.name):
+                if path.is_file() and not path.is_symlink():
+                    entries.append((path.name, label, path.stat().st_size))
+        if not entries:
+            print("No recoverable package archives.")
+            return 0
+        print("ID\tTYPE\tSIZE")
+        for entry_id, label, size in entries:
+            print(f"{entry_id}\t{label}\t{size}")
         return 0
 
     def upload_batch(self, stream: BinaryIO, replace: bool) -> int:
@@ -398,13 +416,14 @@ class Repository:
                         backup = self.backups / timestamp_id(filename)
                         os.replace(source, backup)
                         moved_to_backup.append((backup, source))
+                        print(f"Previous version backed up as: {backup.name}")
                     for filename, (source, _) in staged.items():
                         if filename in unchanged:
                             continue
                         destination = self.packages / filename
                         os.replace(source, destination)
-                        os.chmod(destination, 0o644)
                         installed.append(destination)
+                        os.chmod(destination, 0o644)
                     publish_staged_index(temporary_index, self.index)
                     fsync_directory(self.packages)
                 except Exception:
@@ -466,24 +485,48 @@ class Repository:
         print(f"Packages remaining: {len(retained)}")
         return 0
 
-    def restore_package(self, trash_id: str) -> int:
-        if not TRASH_ID_RE.fullmatch(trash_id) or Path(trash_id).name != trash_id:
-            raise RepoError(f"invalid trash ID: {trash_id!r}")
-        source = self.trash / trash_id
-        if source.is_symlink() or not source.is_file():
-            raise RepoError(f"trash entry not found: {trash_id}")
-        original_filename = trash_id.split("--", 1)[1]
+    def restore_package(self, recoverable_id: str) -> int:
+        if not TRASH_ID_RE.fullmatch(recoverable_id) or Path(recoverable_id).name != recoverable_id:
+            raise RepoError(f"invalid recoverable ID: {recoverable_id!r}")
+        trash_source = self.trash / recoverable_id
+        backup_source = self.backups / recoverable_id
+        if trash_source.is_file() and not trash_source.is_symlink():
+            source = trash_source
+            is_backup = False
+        elif backup_source.is_file() and not backup_source.is_symlink():
+            source = backup_source
+            is_backup = True
+        else:
+            raise RepoError(f"recoverable package entry not found: {recoverable_id}")
+
+        original_filename = recoverable_id.split("--", 1)[1]
         record = package_record(source, original_filename)
 
         with self.locked():
             destination = self.packages / original_filename
-            if destination.exists() or destination.is_symlink():
-                raise RepoError(f"package already exists in repository: {original_filename}")
             records = collect_records(self.packages)
-            proposed = records + [record]
+            existing = next(
+                (item for item in records if item["filename"] == original_filename), None
+            )
+            if existing is not None and not is_backup:
+                raise RepoError(f"package already exists in repository: {original_filename}")
+            if existing is None and is_backup:
+                raise RepoError(
+                    f"cannot roll back backup because the active package is missing: {original_filename}"
+                )
+
+            proposed = [
+                item for item in records if item["filename"] != original_filename
+            ] + [record]
             validate_unique(proposed)
             temporary_index = write_staged_index(self.index, proposed)
+            active_to_trash: tuple[Path, Path] | None = None
             try:
+                if existing is not None:
+                    displaced_id = timestamp_id(original_filename)
+                    displaced = self.trash / displaced_id
+                    os.replace(destination, displaced)
+                    active_to_trash = (displaced, destination)
                 os.replace(source, destination)
                 os.chmod(destination, 0o644)
                 publish_staged_index(temporary_index, self.index)
@@ -491,9 +534,13 @@ class Repository:
             except Exception:
                 if destination.exists():
                     os.replace(destination, source)
+                if active_to_trash is not None and active_to_trash[0].exists():
+                    os.replace(active_to_trash[0], active_to_trash[1])
                 temporary_index.unlink(missing_ok=True)
                 raise
 
+        if active_to_trash is not None:
+            print(f"Replaced active package moved to trash: {active_to_trash[0].name}")
         print(f"Restored: {original_filename}")
         print(f"Packages in repository: {len(proposed)}")
         return 0
@@ -644,10 +691,13 @@ def make_parser() -> argparse.ArgumentParser:
     delete.add_argument("--yes", action="store_true", help="skip the local confirmation prompt")
     delete.add_argument("filenames", nargs="+")
 
-    restore = commands.add_parser("restore", help="restore a package from the server trash")
-    restore.add_argument("trash_id")
+    restore = commands.add_parser(
+        "restore", help="restore a deleted package or roll back a replacement"
+    )
+    restore.add_argument("trash_id", help="ID shown by 'khrepo trash' or an upload backup")
 
     commands.add_parser("reindex", help="validate all archives and regenerate index.tsv")
+    commands.add_parser("trash", help="list deleted packages and replaced versions available to restore")
 
     mirrorlist = commands.add_parser("mirrorlist", help="publish config/official.mirrorlist")
     mirrorlist.add_argument("path", nargs="?", type=Path, default=Path("config/official.mirrorlist"))
@@ -658,6 +708,7 @@ def make_parser() -> argparse.ArgumentParser:
     server_commands.add_parser("status")
     server_commands.add_parser("list")
     server_commands.add_parser("reindex")
+    server_commands.add_parser("trash")
 
     upload_server = server_commands.add_parser("upload-batch")
     upload_server.add_argument("--replace", action="store_true")
@@ -690,6 +741,8 @@ def main() -> int:
                 count = repo.reindex()
                 print(f"Repository index rebuilt: {count} package(s)")
                 return 0
+            if args.server_command == "trash":
+                return repo.list_recoverable()
             if args.server_command == "upload-batch":
                 return repo.upload_batch(sys.stdin.buffer, args.replace)
             if args.server_command == "delete":
@@ -714,6 +767,8 @@ def main() -> int:
             return run_remote(args.host, args.server_command, "restore", args.trash_id)
         if args.command == "reindex":
             return run_remote(args.host, args.server_command, "reindex")
+        if args.command == "trash":
+            return run_remote(args.host, args.server_command, "trash")
         if args.command == "mirrorlist":
             return client_mirrorlist(args.host, args.server_command, args.path)
         raise RepoError("unknown command")
