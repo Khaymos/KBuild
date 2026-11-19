@@ -327,7 +327,7 @@ class Repository:
             entries = []
             for label, directory in (("trash", self.trash), ("backup", self.backups)):
                 for path in sorted(directory.iterdir(), key=lambda item: item.name):
-                            if path.is_file() and not path.is_symlink():
+                    if path.is_file() and not path.is_symlink():
                         entries.append((path.name, label, path.stat().st_size))
         if not entries:
             print("No recoverable package archives.")
