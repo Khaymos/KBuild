@@ -5,6 +5,7 @@ sha256 = "c8609f9cdafde14de7ec7cb406dac9507add1d536df8d3c3e3d3d9c1cd864066"
 archive_root = "xorg-server-21.1.26"
 build_type = "target"
 profile = "xorg"
+patches = ["patches/xorg-server-21.1.26-xkbcomp-runtime-path.patch"]
 depends = [
   "glibc",
   "xorgproto-target",
