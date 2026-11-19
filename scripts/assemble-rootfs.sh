@@ -39,6 +39,10 @@ for path in \
     "$SYSROOT/usr/bin/nano" \
     "$SYSROOT/usr/bin/vim" \
     "$SYSROOT/usr/bin/vi" \
+    "$SYSROOT/usr/bin/openbox" \
+    "$SYSROOT/usr/bin/fluxbox" \
+    "$SYSROOT/usr/bin/startfluxbox" \
+    "$SYSROOT/usr/bin/xterm" \
     "$SYSROOT/usr/bin/mmc" \
     "$SYSROOT/usr/bin/chronyc" \
     "$SYSROOT/usr/share/bash-completion/bash_completion" \
@@ -74,6 +78,25 @@ cp -a --no-preserve=ownership "$SYSROOT/." "$ROOTFS/"
 
 # The installer is a KhaymOS overlay, not a package from the development sysroot.
 install -Dm0755 "$TOP/scripts/khaymos-installer.sh" "$ROOTFS/usr/sbin/khaymos-installer"
+
+echo
+echo "=== Configuring selectable X11 window managers ==="
+install -Dm0755 "$TOP/config/desktop/khaymos-session" \
+    "$ROOTFS/usr/bin/khaymos-session"
+install -Dm0644 "$TOP/config/desktop/session.conf" \
+    "$ROOTFS/etc/khaymos/session.conf"
+
+# Use the same WM-neutral xinitrc for root and newly created users.
+# Openbox is the default; KHAYMOS_WM=fluxbox startx selects Fluxbox.
+install -Dm0644 "$TOP/config/desktop/xinitrc" "$ROOTFS/root/.xinitrc"
+install -Dm0644 "$TOP/config/desktop/xinitrc" "$ROOTFS/etc/skel/.xinitrc"
+
+# Fluxbox needs its own startup script so it remains the foreground X session
+# after the terminal window is closed.
+install -Dm0755 "$TOP/config/desktop/fluxbox-startup" \
+    "$ROOTFS/root/.fluxbox/startup"
+install -Dm0755 "$TOP/config/desktop/fluxbox-startup" \
+    "$ROOTFS/etc/skel/.fluxbox/startup"
 
 # KBuild bookkeeping belongs to the development sysroot, not the OS.
 rm -f "$ROOTFS/.kbuild-ownership.json" "$ROOTFS/.khaymos-target"
