@@ -274,6 +274,11 @@ class Repository:
             os.chmod(directory, 0o700)
         if self.packages.parent != self.arch_root:
             raise RepoError("invalid package directory layout")
+        if os.stat(self.packages).st_dev != os.stat(self.state).st_dev:
+            raise RepoError(
+                "repository packages and private state must be on the same filesystem "
+                "for atomic package moves"
+            )
 
     @contextmanager
     def locked(self) -> Iterator[None]:
@@ -497,21 +502,20 @@ class Repository:
     def restore_package(self, recoverable_id: str) -> int:
         if not TRASH_ID_RE.fullmatch(recoverable_id) or Path(recoverable_id).name != recoverable_id:
             raise RepoError(f"invalid recoverable ID: {recoverable_id!r}")
-        trash_source = self.trash / recoverable_id
-        backup_source = self.backups / recoverable_id
-        if trash_source.is_file() and not trash_source.is_symlink():
-            source = trash_source
-            is_backup = False
-        elif backup_source.is_file() and not backup_source.is_symlink():
-            source = backup_source
-            is_backup = True
-        else:
-            raise RepoError(f"recoverable package entry not found: {recoverable_id}")
-
         original_filename = recoverable_id.split("--", 1)[1]
-        record = package_record(source, original_filename)
 
         with self.locked():
+            trash_source = self.trash / recoverable_id
+            backup_source = self.backups / recoverable_id
+            if trash_source.is_file() and not trash_source.is_symlink():
+                source = trash_source
+                is_backup = False
+            elif backup_source.is_file() and not backup_source.is_symlink():
+                source = backup_source
+                is_backup = True
+            else:
+                raise RepoError(f"recoverable package entry not found: {recoverable_id}")
+            record = package_record(source, original_filename)
             destination = self.packages / original_filename
             records = collect_records(self.packages)
             existing = next(
