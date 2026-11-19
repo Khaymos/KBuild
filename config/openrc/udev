@@ -1,0 +1,23 @@
+#!/sbin/openrc-run
+# Start the eudev device manager before device coldplugging.
+
+description="eudev device manager"
+command="/usr/sbin/udevd"
+command_background="yes"
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need devfs sysfs
+    before checkfs
+    keyword -shutdown
+}
+
+start_pre() {
+    mkdir -p /run/udev
+}
+
+stop() {
+    ebegin "Stopping udevd"
+    /usr/bin/udevadm control --exit
+    eend $?
+}
