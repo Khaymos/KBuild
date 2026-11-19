@@ -235,7 +235,14 @@ def write_staged_index(index_path: Path, records: list[dict[str, str]]) -> Path:
 
 def publish_staged_index(temporary_path: Path, index_path: Path) -> None:
     os.replace(temporary_path, index_path)
-    fsync_directory(index_path.parent)
+    try:
+        fsync_directory(index_path.parent)
+    except OSError as exc:
+        print(
+            "khrepo: warning: repository index was replaced but directory sync failed: "
+            + str(exc),
+            file=sys.stderr,
+        )
 
 
 def timestamp_id(filename: str) -> str:
@@ -250,7 +257,8 @@ class Repository:
         self.packages = self.arch_root / "packages"
         self.index = self.arch_root / "index.tsv"
         self.mirrorlist = self.root / "mirrorlists" / "official.list"
-        self.state = self.root / ".khrepo"
+        # Keep administrative data outside the web-served repository tree.
+        self.state = self.root.parent / ".khrepo"
         self.incoming = self.state / "incoming"
         self.trash = self.state / "trash"
         self.backups = self.state / "backups"
@@ -424,8 +432,8 @@ class Repository:
                         os.replace(source, destination)
                         installed.append(destination)
                         os.chmod(destination, 0o644)
-                    publish_staged_index(temporary_index, self.index)
                     fsync_directory(self.packages)
+                    publish_staged_index(temporary_index, self.index)
                 except Exception:
                     for path in reversed(installed):
                         path.unlink(missing_ok=True)
@@ -472,8 +480,9 @@ class Repository:
                     os.replace(source, destination)
                     moved.append((destination, source))
                     print(f"Moved to recoverable trash: {trash_id}")
-                publish_staged_index(temporary_index, self.index)
                 fsync_directory(self.packages)
+                fsync_directory(self.trash)
+                publish_staged_index(temporary_index, self.index)
             except Exception:
                 for trash_path, original in reversed(moved):
                     if trash_path.exists():
@@ -529,8 +538,9 @@ class Repository:
                     active_to_trash = (displaced, destination)
                 os.replace(source, destination)
                 os.chmod(destination, 0o644)
-                publish_staged_index(temporary_index, self.index)
                 fsync_directory(self.packages)
+                fsync_directory(source.parent)
+                publish_staged_index(temporary_index, self.index)
             except Exception:
                 if destination.exists():
                     os.replace(destination, source)
@@ -572,7 +582,14 @@ class Repository:
                     os.fsync(output.fileno())
                 os.chmod(temporary_path, 0o644)
                 os.replace(temporary_path, self.mirrorlist)
-                fsync_directory(self.mirrorlist.parent)
+                try:
+                    fsync_directory(self.mirrorlist.parent)
+                except OSError as exc:
+                    print(
+                        "khrepo: warning: mirrorlist replaced but directory sync failed: "
+                        + str(exc),
+                        file=sys.stderr,
+                    )
             except Exception:
                 temporary_path.unlink(missing_ok=True)
                 raise
