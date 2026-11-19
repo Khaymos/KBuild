@@ -7,11 +7,12 @@ build_type = "target"
 depends = ["glibc"]
 
 build = [
-  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --enable-shared --disable-static",
+  "./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --libdir=/usr/lib --disable-multi-os-directory --enable-shared --disable-static",
   "make -j\"$(nproc)\""
 ]
 
 install = [
   "make install DESTDIR=\"$DESTDIR\"",
-  "rm -f \"$DESTDIR/usr/share/info/dir\""
+  "test -e \"$DESTDIR/usr/lib/libffi.so.8\"",
+  "rm -f \"$DESTDIR/usr/lib/libffi.la\" \"$DESTDIR/usr/share/info/dir\""
 ]
