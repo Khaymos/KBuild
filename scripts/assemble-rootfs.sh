@@ -30,6 +30,8 @@ for path in \
     "$SYSROOT/usr/sbin/agetty" \
     "$SYSROOT/usr/sbin/ip" \
     "$SYSROOT/usr/sbin/dhcpcd" \
+    "$SYSROOT/usr/sbin/udevd" \
+    "$SYSROOT/usr/bin/udevadm" \
     "$SYSROOT/usr/bin/lspci" \
     "$SYSROOT/usr/bin/lsusb" \
     "$SYSROOT/usr/bin/ping" \
@@ -192,6 +194,7 @@ lp:x:7:
 kmem:x:9:
 wheel:x:10:root
 floppy:x:11:
+cdrom:x:24:
 mail:x:12:
 news:x:13:
 uucp:x:14:
@@ -202,11 +205,13 @@ video:x:27:
 shadow:x:42:
 utmp:x:43:
 audio:x:63:
+kvm:x:78:
 input:x:97:
 messagebus:x:81:
 dhcpcd:x:68:
 polkitd:x:102:
 chrony:x:991:
+sgx:x:995:
 users:x:1000:
 nogroup:x:65534:
 GROUP
@@ -234,6 +239,7 @@ lp:!::
 kmem:!::
 wheel:!::root
 floppy:!::
+cdrom:!::
 mail:!::
 news:!::
 uucp:!::
@@ -244,11 +250,13 @@ video:!::
 shadow:!::
 utmp:!::
 audio:!::
+kvm:!::
 input:!::
 messagebus:!::
 dhcpcd:!::
 polkitd:!::
 chrony:!::
+sgx:!::
 users:!::
 nogroup:!::
 GSHADOW
@@ -415,6 +423,19 @@ for level in boot default; do
         rm -f "$ROOTFS/etc/runlevels/$level/$service"
     done
 done
+
+echo
+echo "=== Enabling eudev device management ==="
+install -m 0755 "$TOP/config/openrc/udev" "$ROOTFS/etc/init.d/udev"
+install -m 0755 "$TOP/config/openrc/udev-trigger" "$ROOTFS/etc/init.d/udev-trigger"
+mkdir -p "$ROOTFS/etc/runlevels/sysinit"
+ln -sfn /etc/init.d/udev "$ROOTFS/etc/runlevels/sysinit/udev"
+ln -sfn /etc/init.d/udev-trigger "$ROOTFS/etc/runlevels/sysinit/udev-trigger"
+
+echo
+echo "=== Configuring Xorg software cursor ==="
+install -Dm0644 "$TOP/config/xorg/20-software-cursor.conf" \
+    "$ROOTFS/usr/share/X11/xorg.conf.d/20-software-cursor.conf"
 
 # Keep every package-owned service script intact for KNPM adoption.
 # netmount depends on a separate network-online service that is not packaged,
