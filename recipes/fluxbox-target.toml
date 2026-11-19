@@ -1,0 +1,28 @@
+name = "fluxbox-target"
+version = "1.3.7"
+source = "https://downloads.sourceforge.net/project/fluxbox/fluxbox/1.3.7/fluxbox-1.3.7.tar.xz"
+sha256 = "fc8c75fe94c54ed5a5dd3fd4a752109f8949d6df67a48e5b11a261403c382ec0"
+archive_root = "fluxbox-1.3.7"
+build_type = "target"
+profile = "xorg"
+depends = [
+  "glibc",
+  "fribidi-target",
+  "libx11-target",
+  "libxext-target",
+  "libxft-target",
+  "libxinerama-target",
+  "libxpm-target",
+  "libxrandr-target",
+  "libxrender-target"
+]
+
+build = [
+  "sed -i '/text_prop.value > 0/s/>/!=/' util/fluxbox-remote.cc",
+  "PKG_CONFIG_SYSROOT_DIR=\"$SYSROOT\" PKG_CONFIG_LIBDIR=\"$SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig\" ./configure --build=\"$(gcc -dumpmachine)\" --host=\"$KBUILD_TARGET\" --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --disable-imlib2 --disable-nls",
+  "make -j\"$(nproc)\""
+]
+
+install = [
+  "make install DESTDIR=\"$DESTDIR\""
+]
