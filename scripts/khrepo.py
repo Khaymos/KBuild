@@ -44,9 +44,7 @@ DEFAULT_HOST = os.environ.get("KHAYMOS_REPO_HOST", "khaymos-repo")
 DEFAULT_SERVER_COMMAND = os.environ.get(
     "KHAYMOS_REPO_SERVER_COMMAND", "/usr/local/sbin/khrepo"
 )
-DEFAULT_REPO_ROOT = Path(
-    os.environ.get("KHREPO_REPO_ROOT", "/srv/khaymos/repo")
-)
+DEFAULT_REPO_ROOT = Path("/srv/khaymos/repo")
 
 
 class RepoError(Exception):
@@ -325,12 +323,12 @@ class Repository:
         return 0
 
     def list_recoverable(self) -> int:
-        self.prepare()
-        entries = []
-        for label, directory in (("trash", self.trash), ("backup", self.backups)):
-            for path in sorted(directory.iterdir(), key=lambda item: item.name):
-                if path.is_file() and not path.is_symlink():
-                    entries.append((path.name, label, path.stat().st_size))
+        with self.locked():
+            entries = []
+            for label, directory in (("trash", self.trash), ("backup", self.backups)):
+                for path in sorted(directory.iterdir(), key=lambda item: item.name):
+                            if path.is_file() and not path.is_symlink():
+                        entries.append((path.name, label, path.stat().st_size))
         if not entries:
             print("No recoverable package archives.")
             return 0
@@ -433,6 +431,8 @@ class Repository:
                         installed.append(destination)
                         os.chmod(destination, 0o644)
                     fsync_directory(self.packages)
+                    if moved_to_backup:
+                        fsync_directory(self.backups)
                     publish_staged_index(temporary_index, self.index)
                 except Exception:
                     for path in reversed(installed):
@@ -720,7 +720,6 @@ def make_parser() -> argparse.ArgumentParser:
     mirrorlist.add_argument("path", nargs="?", type=Path, default=Path("config/official.mirrorlist"))
 
     server = commands.add_parser("server", help=argparse.SUPPRESS)
-    server.add_argument("--repo-root", type=Path, default=DEFAULT_REPO_ROOT)
     server_commands = server.add_subparsers(dest="server_command", required=True)
     server_commands.add_parser("status")
     server_commands.add_parser("list")
@@ -749,7 +748,7 @@ def main() -> int:
         if args.command == "server":
             if os.geteuid() != 0:
                 raise RepoError("server operations must run as root (use doas)")
-            repo = Repository(args.repo_root)
+            repo = Repository(DEFAULT_REPO_ROOT)
             if args.server_command == "status":
                 return repo.status()
             if args.server_command == "list":
