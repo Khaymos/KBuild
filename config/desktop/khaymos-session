@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DEFAULT_WM=openbox
+if [ -r /etc/khaymos/session.conf ]; then
+    . /etc/khaymos/session.conf
+fi
+
+window_manager=${KHAYMOS_WM:-${DEFAULT_WM:-openbox}}
+
+case "$window_manager" in
+    openbox)
+        if command -v xterm >/dev/null 2>&1; then
+            xterm &
+        fi
+        exec openbox
+        ;;
+    fluxbox)
+        exec startfluxbox
+        ;;
+    *)
+        printf 'KhaymOS: unsupported window manager: %s\n' "$window_manager" >&2
+        printf 'Choose "openbox" or "fluxbox".\n' >&2
+        exit 1
+        ;;
+esac
