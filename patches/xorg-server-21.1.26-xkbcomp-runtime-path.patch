@@ -1,0 +1,6 @@
+diff --git a/xkb/ddxLoad.c b/xkb/ddxLoad.c
+--- a/xkb/ddxLoad.c
++++ b/xkb/ddxLoad.c
+@@ -140,1 +140,1 @@
+-    if (XkbBinDirectory != NULL) {
++    if (XkbBinDirectory != NULL && access(XkbBinDirectory, X_OK) == 0) {
